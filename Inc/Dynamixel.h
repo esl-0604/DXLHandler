@@ -6,7 +6,7 @@
 #include "DynamixelHandler.h"
 #include "DynamixelPacket.h"
 #include "DynamixelProtocol.h"
-//#include "PhotoSensor.h"
+#include "PhotoSensor.h"
 
 class DynamixelHandler;
 class DynamixelProtocol;
@@ -21,7 +21,7 @@ private:
         DynamixelHandler* _dynamixHandler;
         DynamixelProtocol* _dynamixProtocol;
         DynamixelControl* _dynamixControl;
-//        PhotoSensor* _PhotoSensor;
+        PhotoSensor* _PhotoSensor;
         static std::map<uint8_t, Dynamixel*> m_Dynamixel;
         static DynamixelPackets m_DynamixelTxPackets;
 

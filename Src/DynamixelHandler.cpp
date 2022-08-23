@@ -28,12 +28,16 @@ DynamixelHandler::DynamixelHandler(UART_HandleTypeDef* huart){
 
 
 uint8_t* l_ucPackets = 0;
+DynamixelPackets g_tempDynamix;
 void DynamixelHandler::xTransmitPacket(DynamixelPackets& l_dynamixelPackets){
     uint8_t l_PackLen = l_dynamixelPackets.GetPacketLen();
     l_ucPackets = l_dynamixelPackets.GetPackets();
+    g_tempDynamix = l_dynamixelPackets;
+    this->xSetTargetAddr(l_dynamixelPackets.ucGetTargetAddr());
     while(bGetTxFlag() != true);
     this->xSetTxFlag(false);
-    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET);
+    HAL_HalfDuplex_EnableTransmitter(this->_huart);
     HAL_UART_Transmit_IT(this->_huart, l_ucPackets, l_PackLen);
 }
 
@@ -41,14 +45,14 @@ bool DynamixelHandler::bParsingFunction(Dynamixel* g_mapDynamixel,uint8_t ucSelM
   
   const  uint16_t l_usPrePos = this->usGetRxPreEndPos();
   const  uint16_t l_usEndPos = this->usGetRxEndPos();
-  const uint8_t l_ucBuffPos = this->ucGetHeaderIndex(l_usPrePos);
+  const uint8_t l_ucBuffPos = 0;
   const  uint16_t l_usPackSize = l_usEndPos > l_ucBuffPos ? (l_usEndPos - l_ucBuffPos) : ((PACKET_SIZE - l_ucBuffPos) + l_usEndPos); 
   this->_rxPackets->xSetPacketLen((uint8_t)l_usPackSize);
-  
   if(l_ucBuffPos < PACKET_NOTFOUND){
     this->xSetRxPacketZero();
-    if(l_usEndPos > l_ucBuffPos)
+    if(l_usEndPos > l_ucBuffPos){
       this->xSetRxPackets(this->_rxPackets->GetTempPackets(),l_usPackSize,l_ucBuffPos,0);
+    }
     else{
       uint8_t l_ucRestSize= PACKET_SIZE-l_ucBuffPos;
       this->xSetRxPackets(this->_rxPackets->GetTempPackets(),l_ucRestSize,l_ucBuffPos,0);
@@ -69,8 +73,8 @@ bool DynamixelHandler::bParsingFunction(Dynamixel* g_mapDynamixel,uint8_t ucSelM
               }
             }
             else{
-                g_mapDynamixel[1].xSetPos((l_pucTempPackPtr[13]<<24) | (l_pucTempPackPtr[12]<<16) | (l_pucTempPackPtr[11]<<8) | (l_pucTempPackPtr[10]));
-                g_mapDynamixel[0].xSetPos((l_pucTempPackPtr[21]<<24) | (l_pucTempPackPtr[20]<<16) | (l_pucTempPackPtr[19]<<8) | (l_pucTempPackPtr[18]));
+                g_mapDynamixel[0].xSetPos((l_pucTempPackPtr[13]<<24) | (l_pucTempPackPtr[12]<<16) | (l_pucTempPackPtr[11]<<8) | (l_pucTempPackPtr[10]));
+                g_mapDynamixel[1].xSetPos((l_pucTempPackPtr[21]<<24) | (l_pucTempPackPtr[20]<<16) | (l_pucTempPackPtr[19]<<8) | (l_pucTempPackPtr[18]));
             }
         }
         else if(this->_usTargetAddr == PRESENT_CURRENT){
@@ -104,7 +108,6 @@ bool DynamixelHandler::bParsingFunction(Dynamixel* g_mapDynamixel,uint8_t ucSelM
     }
     return false;
   }
-  return false;
 }
 
   

@@ -30,6 +30,10 @@ void DynamixelPackets::xSetPacketLen(uint8_t packetLen){
   this->_ucPacketsLen=packetLen;
 }
 
+uint8_t DynamixelPackets::ucGetTargetAddr(){
+  return _ucWRPackets[8];
+}
+
 void DynamixelPackets::xSetPackZero(){
   memset(this->_ucWRPackets,0,PACKET_SIZE);
   this->_ucPacketsLen=0;

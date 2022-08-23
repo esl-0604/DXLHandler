@@ -1,11 +1,5 @@
 #pragma once
 
-//Dyanmixel Init
-#define DYNAMIXEL_NUM   2
-#define DYNAMIXEL_ID_FIR   5
-#define DYNAMIXEL_ID_SEC   6
-
-
 //Packet setting
 #define PACKET_SIZE         32
 #define PACKET_NUMBER       8
@@ -16,8 +10,6 @@
 #define PING_PACKET_SIZE    14
 #define REBOOT_PACKET_SIZE  11
 #define MAX_SYNCID_NUM      9
-
-#define PACKET_SIZE_4BYTE 4
 
 //Instruction Protocol
 #define PING_INST           0x01U
@@ -75,16 +67,23 @@
 
 //HOMING mode
 #define HOMING_INIT                 0x00U
-#define HOMING_T_GOAL_POS           0x01U
+#define HOMING_FIRST_GOAL_POS       0x01U
 #define HOMING_CHECK_POS            0x02U
 #define HOMING_WAIT                 0x03U
 #define HOMING_GOTO_PHOTO           0x04U
 #define HOMING_CHECK_PHOTO          0x05U
-#define HOMING_OFFSET_SET           0x06U
-#define HOMING_CHECK_PHOTO_SEC      0x07U
-#define HOMING_EMER_EXIT            0x08U
-#define HOMING_GOTO_CARTRIDGE       0x09U
-#define HOMING_STEP_GOING           0x10U
+#define HOMING_PHOTO_DELAY          0x06U
+#define HOMING_GOTO_POSITION1       0x07U
+#define HOMING_GOTO_HOME            0x08U
+#define HOMING_GOTO_POSITION2       0x09U
+#define HOMING_CHECK_POSITION2      0x10U
+#define HOMING_GRIP_POSITION2       0x11U
+#define HOMING_GRIP_INIT            0x12U
+#define HOMING_PIPE_TAKE            0x13U
+#define TEST_END                    0x55U
+//#define HOMING_EMER_EXIT            0x08U
+//#define HOMING_GOTO_CARTRIDGE       0x09U
+//#define HOMING_STEP_GOING           0x10U
 #define HOMING_EXIT                 0xFFU
 
 #define HOMING_POSITION_MODE  4

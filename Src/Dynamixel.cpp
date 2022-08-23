@@ -42,10 +42,11 @@ bool DelayFun(uint32_t delayTick){
 Dynamixel::Dynamixel(DynamixelHandler* DynamixelHandler, uint8_t ucID){
   this->_ucID = ucID;
   this->_dynamixHandler = DynamixelHandler;
-  this->_bPhotoSenor = true;
+  this->_bPhotoSenor = false;
   this->_dynamixProtocol = new DynamixelProtocol(DynamixelHandler, ucID);
   this->_dynamixControl = new DynamixelControl();
   this->_ucHomingFlag=0;
+  this->_PhotoSensor = new PhotoSensor();
   Dynamixel::m_Dynamixel.insert(std::pair<uint8_t, Dynamixel*>(ucID,this));
 
   this->_sCurrent = 0;
@@ -69,24 +70,24 @@ void Dynamixel::Dxl_Ping(){
 
 void Dynamixel::xInitDxl(int mode,int lev){
   Dynamixel::m_Dynamixel[this->_ucID] =this;
-  
+
     this->xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-    HAL_Delay(2);
+    HAL_Delay(5);
   // address : 64  토크 on/off default : 0
     this->xTransmitDxlWPacket(OPERATING_MODE,mode,1);               // address : 11  operating Mode default : 3
-    HAL_Delay(2);
+    HAL_Delay(5);
     this->xTransmitDxlWPacket(STATUS_RETURN_LEVEL,lev,1);               // address : 68  Return level : 1
-    HAL_Delay(2);
+    HAL_Delay(5);
     this->xTransmitDxlWPacket(PROFILE_VELOCITY,300,4);
-    HAL_Delay(2);
+    HAL_Delay(5);
     this->xTransmitDxlWPacket(PROFILE_ACCELERATION,60,4);
-    HAL_Delay(2);
+    HAL_Delay(5);
 //    this->xTransmitDxlWPacket(POSITION_I_GAIN,10,4);
 //    HAL_Delay(2);
 //    this->xTransmitDxlWPacket(POSITION_D_GAIN,100,4);
 //    HAL_Delay(2);
     this->xTransmitDxlWPacket(POSITION_P_GAIN,1300,4);
-    HAL_Delay(2);
+    HAL_Delay(5);
     this->xEnableTorque();                       // address : 64  토크 on/off default : 0
 }
 
@@ -95,7 +96,7 @@ void Dynamixel::xTransmitDxlWPacket(uint16_t address, int32_t usdata, uint16_t u
     this->_dynamixProtocol->xSetWritePacket(this->_ucID,WRITE_INST,address,usdata,usdata_length);
     Dynamixel::m_DynamixelTxPackets = this->_dynamixProtocol->GetWritePacket();
     this->_dynamixHandler->xTransmitPacket(m_DynamixelTxPackets);
-}
+    }
 
 void Dynamixel::xTransmitDxlRPacket(uint16_t address, uint16_t usdata_length){
 
@@ -105,7 +106,7 @@ void Dynamixel::xTransmitDxlRPacket(uint16_t address, uint16_t usdata_length){
     this->_dynamixHandler->xTransmitPacket(m_DynamixelTxPackets);
     
     //Receive Packet Setting
-    this->_dynamixHandler->xSetTargetAddr(address);
+//    this->_dynamixHandler->xSetTargetAddr(address);
 }
 
 uint8_t testBuffer[30];
@@ -143,6 +144,7 @@ void Dynamixel::xTransmitFacReset(uint8_t ucMode){
   this->_dynamixProtocol->xSetRxFacResetPackets(ucMode);
   DynamixelPackets l_dynamixelPackets = _dynamixProtocol->GetTxFacResetPacket();
   this->_dynamixHandler->xTransmitPacket(l_dynamixelPackets);
+  
 }
 
 void Dynamixel::ReceiveSyncDxlPacket(uint16_t address, uint16_t usdata_length,uint8_t ucIdNum, ...){
@@ -184,142 +186,12 @@ bool g_bCurPosFlag= false;
 
 
 void Dynamixel::xHomingMode(int32_t iGoalPosition,Dynamixel* DynamixelOther){
- if(bCheckTHCurrent()){
-  switch(this->ucGetHomingFlag()){
-  case HOMING_INIT:    
-    this->xInitDxl(g_cMode,g_cLevel);
-    if(g_bInitCompleteFlag) {
-      this->xSetHomingFlag(HOMING_T_GOAL_POS);
+  if(bCheckTHCurrent()){
+    switch(this->ucGetHomingFlag()){
+      case HOMING_INIT:    
+      break;
     }
-    break;
-  case HOMING_T_GOAL_POS:
-    this->xTransmitDxlWPacket(GOAL_POSITION,iGoalPosition,4);
-    this->xSetHomingFlag(HOMING_CHECK_POS);
-    break;
-  case HOMING_CHECK_POS:
-    this->_dynamixHandler->xSetHomingOperationFlag(true); //position Flag 설정해야함
-    this->xSetHomingFlag(HOMING_WAIT);
-    break;
-  case HOMING_WAIT:
-    if(this->bCompareGoalPresentPos(g_iGoalPosition,this->iGetPos())){
-      this->_dynamixHandler->xSetHomingOperationFlag(false);
-      this->xSetHomingFlag(HOMING_GOTO_PHOTO);
-    }
-    break;
-  case HOMING_GOTO_PHOTO:
-    this->xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(OPERATING_MODE,1,1);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(TORQUE_ADDR,1,1);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(GOAL_VELOCITY,250,4);
-    HAL_Delay(2);
-    this->_dynamixHandler->xSetHomingOperationFlag(true); // position Flag 설정해야함
-    this->xSetHomingFlag(HOMING_CHECK_PHOTO);
-    break;
-  case HOMING_CHECK_PHOTO:
-    if(this->bGetPhotoFlag()==false){
-      this->_dynamixHandler->xSetHomingOperationFlag(false);
-      this->xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-      HAL_Delay(2);
-      this->xTransmitDxlWPacket(TORQUE_ADDR,1,1);
-      HAL_Delay(2);
-      this->xTransmitDxlWPacket(GOAL_VELOCITY,-50,4);
-      HAL_Delay(2);
-      this->_dynamixHandler->xSetHomingOperationFlag(true);
-      this->xSetHomingFlag(HOMING_CHECK_PHOTO_SEC);
-      }
-    break;
-  case HOMING_CHECK_PHOTO_SEC:
-    if(this->bGetPhotoFlag()){
-      this->_dynamixHandler->xSetHomingOperationFlag(false);
-      this->xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-      this->xSetHomingFlag(HOMING_OFFSET_SET);
-    }
-    break;
-  case HOMING_OFFSET_SET:
-    this->_dynamixControl->xSetCurHOffset((this->_dynamixControl->iGetPreHOffset()+this->iGetPos()));
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(HOMING_OFFSET,((-1)*this->_dynamixControl->iGetCurHOffset()),4);
-    HAL_Delay(2);
-    this->_dynamixControl->xSetPreHOffset(this->_dynamixControl->iGetCurHOffset());
-    this->xTransmitDxlWPacket(TORQUE_ADDR,1,1);
-    HAL_Delay(2);
-    this->xTransmitDxlRPacket(PRESENT_POSITION,4);
-    this->xSetHomingFlag(HOMING_GOTO_CARTRIDGE);
-
-    break;
-  case HOMING_GOTO_CARTRIDGE:
-    this->xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(PROFILE_ACCELERATION,0,4);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(PROFILE_VELOCITY,0,4);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(OPERATING_MODE,4,1);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(TORQUE_ADDR,1,1);
-    HAL_Delay(2);
-    this->xTransmitDxlWPacket(GOAL_POSITION,END_OF_LM_GUIDE,4);
-    this->xSetHomingFlag(0x11);
-        // 완료했으니 right로
-    if(g_ucSelectMotor == 0){
-      g_ucSelectMotor =1;
-      this->xSetHomingFlag(HOMING_INIT);
-      g_bInitCompleteFlag = false;
-    }
-    else if(g_ucSelectMotor == 1){
-      this->xSetHomingFlag(HOMING_STEP_GOING);
-    }
-    break;
-  case HOMING_STEP_GOING:
-    if(g_bCurPosFlag){
-      this->ReceiveSyncDxlPacket(PRESENT_POSITION,4,2,5,6);
-      g_bCurPosFlag = false;
-    }
-    else{
-      this->ReceiveSyncDxlPacket(PRESENT_CURRENT,2,2,5,6);
-      g_bCurPosFlag = true;
-    }
-    if(g_bCartOutFlag){
-      int32_t l_iTargetPosLeft = this->iGetPos()+g_testLeft;
-      int32_t l_iTargetPosRight = DynamixelOther->iGetPos()+g_testRight;
-      int32_t  l_piSyncTargetPos[2]={l_iTargetPosRight,l_iTargetPosLeft};
-      this->xTransmitSyncDxlPacket(GOAL_POSITION,l_piSyncTargetPos,4,2,5,6);
-      g_bCartOutFlag = false;
-    }
-    if(g_bCartInFlag){
-      int32_t l_iTargetPosLeft = this->iGetPos()-g_testLeft;
-      int32_t l_iTargetPosRight = DynamixelOther->iGetPos()-g_testRight;
-      int32_t  l_piSyncTargetPos[2]={l_iTargetPosRight,l_iTargetPosLeft};
-      this->xTransmitSyncDxlPacket(GOAL_POSITION,l_piSyncTargetPos,4,2,5,6);
-      g_bCartInFlag = false;
-    }
-    if(g_bCartEndFlag){
-            int32_t  l_piSyncTargetPos[2]={MID_OF_LM_GUIDE,MID_OF_LM_GUIDE};
-      this->xTransmitSyncDxlPacket(GOAL_POSITION,l_piSyncTargetPos,4,2,5,6);
-      HAL_Delay(2);
-//      this->xTransmitFacReset(0x02); //정해진거리 체크하는거 필요함
-      this->xSetHomingFlag(HOMING_EXIT);
-      g_bCartEndFlag = false;
-    }
-    break;
-  case HOMING_EXIT:
-    this->xSetHomingFlag(HOMING_INIT);
-    this->_dynamixHandler->xSetHomingOperationFlag(false);
-    Dxl_flag=0;
-    break;
-  case HOMING_EMER_EXIT:
-    if(this->bDisableTorque()){
-    this->_dynamixHandler->xSetHomingOperationFlag(false);
-    Dxl_flag = 0;
-    }
-    break;
-  default:
-    break;
   }
- }
  else{
    Dxl_flag = 0;
  }
@@ -404,28 +276,28 @@ bool g_bDisableFlag= true;
 
   
 // 긴급정지인데 시스를 홀드할때와 11나눠야함
-  bool Dynamixel::bCheckTHCurrent(){
-    int16_t l_sCurrent= this->sGetCur();
-    if(g_bDisableFlag){
-      if(abs(l_sCurrent)< 40){             // packet자체가 이상하다고 봐야함 current는 일반적으로 10이하
-        if(THRESHOLD_CURRENT<abs(l_sCurrent)){
-          g_ucCount++;
-        }
-        else
-          g_ucCount=0;
-      }
-      if(g_ucCount >= 3){
-        g_bDisableFlag = false;
-      }
-      else{
-        return true;
-      }
-    }
-    else{
-      this->xSetHomingFlag(HOMING_EMER_EXIT);
-    }
-  return true;
-}
+//  bool Dynamixel::bCheckTHCurrent(){
+//    int16_t l_sCurrent= this->sGetCur();
+//    if(g_bDisableFlag){
+//      if(abs(l_sCurrent)< 40){             // packet자체가 이상하다고 봐야함 current는 일반적으로 10이하
+//        if(THRESHOLD_CURRENT<abs(l_sCurrent)){
+//          g_ucCount++;
+//        }
+//        else
+//          g_ucCount=0;
+//      }
+//      if(g_ucCount >= 3){
+//        g_bDisableFlag = false;
+//      }
+//      else{
+//        return true;
+//      }
+//    }
+//    else{
+//      this->xSetHomingFlag(HOMING_EMER_EXIT);
+//    }
+//  return true;
+//}
 
 
 uint8_t Dynamixel::ucGetTorqueStat(){

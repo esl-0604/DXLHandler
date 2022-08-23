@@ -29,7 +29,7 @@ public:
  uint16_t usGetCrcData();
  uint8_t* GetPackets();
  uint8_t* GetTempPackets();
- 
+ uint8_t ucGetTargetAddr();
  //test
 // void xSetSyncPackets(uint8_t* pPackData,uint8_t ucPacketLen,uint8_t ucNum);
 };

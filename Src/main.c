@@ -45,45 +45,124 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim11;
+ TIM_HandleTypeDef htim11;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-
-
-//Timer_Counter
 uint32_t g_uiTim11Cnt = 0;
 
-/*--------------------------------*/
 //Dynamixel
 uint8_t g_ucSelectMotor = 0;
-int8_t g_cMode = 3;
-uint8_t g_ucMotorNum = 2;
-
-//parsing Var
 uint8_t g_ucSize = 25;
 uint8_t g_pucRxBuffer[PACKET_SIZE] = {0, };
-int32_t g_iParsingData =0;
+
+int8_t g_cMode = 3;
 
 uint8_t g_ucMotorStateFlag = 0;
-int32_t g_uiPosReadTick = 0;
-int32_t g_uiPosReadDelay = 250;
 
+int32_t g_iParsingData =0;
+int32_t g_uiPosReadTick = 0;
+int32_t g_uiPosReadDelay = 150;
+int32_t g_iGoalVelUp = 150;
+int32_t g_iGoalVelDown = -150;
+
+bool g_bMotorBackFlag = false;
 bool g_bPostionReadFlag = false;
-bool g_bSyncPostionReadFlag = false;
+bool g_bMotorCompFlag = false;
+
+
+
+uint8_t g_ucMotorLimitState = 2;
+
+uint8_t g_ucMotorStFlag = 0;
+
+int32_t g_TargetVel = -50; 
+
+int32_t g_iOffeset = 1800;
 
 DynamixelHandler g_dynamixelHandler(&huart1);
-Dynamixel g_mapDynamixel[DYNAMIXEL_NUM] = {Dynamixel(&g_dynamixelHandler,DYNAMIXEL_ID_FIR),Dynamixel(&g_dynamixelHandler,DYNAMIXEL_ID_SEC)};
+Dynamixel g_mapDynamixel[2] = {Dynamixel(&g_dynamixelHandler,5),Dynamixel(&g_dynamixelHandler,6)};
 
 //main Control Flag
 
-uint16_t g_usMainFlag = 0;
+uint16_t g_usMainFlag = 7;
+
+uint8_t MotorOpFlag = 0;
+uint8_t MotorPreOpFlag = 0;
+bool g_bWaitFlag = false;
+bool g_bMotorInitFlag = false;
+bool g_bMotorOPFlag = false;
+bool g_bMotorStopFlag = false;
+
+bool g_bMotorCWFlag = false;
+bool g_bMotorCCWFlag = false;
+bool g_bMotorStop = false;
+
+bool g_bPhotoFlag = false;
+
+bool g_bMotorFlag1 = false;
+bool g_bMotorFlag2 = false;
+
+bool g_bResetFlag = false;
+uint8_t g_ucMotorSpeedState =0;
 
 uint32_t g_uiTick =0;
 uint32_t g_uiTargetTick =100;
+uint32_t g_uiSpeedTick =0;
+uint32_t g_uiSpeedTargetTick =400;
+
+int32_t g_iCurPos = 0;
+uint8_t g_ucMotState = 0;
+uint8_t g_ucPreMotState = 0;
+
+int32_t g_iPosGoal1 =0;
+int32_t g_iPosGoal2 =0;
+
+
+/*-----------------------------*/
+
+//Motor 1번 XM430 포지션 위치 변수
+
+//초기 위치
+int32_t g_iInitPos = 3000;
+
+//Slide 1번 위치
+int32_t g_iPosGoal1_1 = 10000;
+int32_t g_iPosGoal1_2 = 5000;
+
+//Slide 2번 위치
+int32_t g_iPosGoal2_1 = 9000;
+int32_t g_iPosGoal2_2 = 4000;
+/*-----------------------------*/
+
+//Motor 0번 XM530의 그립 위치 변수
+int32_t g_iGripPos = -220;
+int32_t g_iGripPosOffset = 40;
+int32_t g_iGripInitPos = 1500;
+int32_t g_iGripOffPos = 1600;
+
+
+
+int32_t g_iPosGoalOffset = 3;
+
+int32_t g_iPhotoDelayTick =0;
+int32_t g_iPhotoDelayTime = 1000;
+bool g_bPhotoDelayFlag = false;
+//Switch LED Flag
+
+bool g_bSlide_1 = false;
+bool g_bSlide_2 = false;
+
+uint8_t g_ucSlideState = 0;
+uint8_t g_ucPreSlideState = 0;
+
+
+bool g_bLED1_flag = false;
+bool g_bLED2_flag = false;
+bool g_bLED3_flag = false;
 
 /* USER CODE END PV */
 
@@ -137,6 +216,10 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim11);
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_12,GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -213,7 +296,7 @@ static void MX_TIM11_Init(void)
 
   /* USER CODE END TIM11_Init 1 */
   htim11.Instance = TIM11;
-  htim11.Init.Prescaler = 83;
+  htim11.Init.Prescaler = 60;
   htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim11.Init.Period = 99;
   htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -244,7 +327,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 1000000;
+  huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -328,6 +411,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -341,31 +430,110 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PB1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Slide_1_Pin */
+  GPIO_InitStruct.Pin = Slide_1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Slide_1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Slide_2_Pin */
+  GPIO_InitStruct.Pin = Slide_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Slide_2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC10 PC11 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
     if(htim->Instance == TIM11){
       g_uiTim11Cnt++;
+      g_bSlide_1 = (HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12));
+      g_bSlide_2 = (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_11));
+      g_ucSlideState = g_bSlide_1 <<1 | g_bSlide_2;
+      if(g_ucSlideState != g_ucPreSlideState || g_bResetFlag == false){
+        switch(g_ucSlideState){
+        case 1:
+          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_SET);
+          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_12,GPIO_PIN_RESET);
+          g_iPosGoal1 = g_iPosGoal1_1;
+          g_iPosGoal2 = g_iPosGoal1_2;
+          break;
+        case 2:
+          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_12,GPIO_PIN_SET);
+          g_iPosGoal1 = g_iPosGoal2_1;
+          g_iPosGoal2 = g_iPosGoal2_2;
+          break;
+        }
+      }
+       g_ucPreSlideState = g_ucSlideState;
+      
     if(g_dynamixelHandler.bGetParsingFlag()){
       if(g_dynamixelHandler.bParsingFunction(g_mapDynamixel,g_ucSelectMotor)){
         g_dynamixelHandler.xSetParsingFlag(false);
       }
     }
+      if(HAL_GetTick()-g_uiTick > g_uiTargetTick){        
+        if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_8) == GPIO_PIN_RESET){
+          if(g_bMotorFlag1 == false){
+          g_bMotorOPFlag = true;
+          }
+        g_uiTick = HAL_GetTick();
+        }
+      if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_9) == GPIO_PIN_RESET){
+        if(g_bMotorFlag2 == false){
+          g_bMotorStopFlag = true;
+        }
+        g_uiTick = HAL_GetTick();
+        }
+      }
       if(g_bPostionReadFlag){
         if(HAL_GetTick() - g_uiPosReadTick > g_uiPosReadDelay){
-          g_mapDynamixel[0].xTransmitDxlRPacket(PRESENT_POSITION,PACKET_SIZE_4BYTE);
+          g_mapDynamixel[0].ReceiveSyncDxlPacket(PRESENT_POSITION,4,2,5,6);
           g_uiPosReadTick = HAL_GetTick();
         }
       }
-      if(g_bSyncPostionReadFlag){
-        if(HAL_GetTick() - g_uiPosReadTick > g_uiPosReadDelay){
-          g_mapDynamixel[0].ReceiveSyncDxlPacket(PRESENT_POSITION,PACKET_SIZE_4BYTE,DYNAMIXEL_NUM,5,6);
-          g_uiPosReadTick = HAL_GetTick();
-        }
-      }
+    
       switch(g_usMainFlag){
       case 0:
+//        if(HAL_GetTick()-g_uiSpeedTick > 500){
+//          g_usMainFlag = 7;
+//          g_uiSpeedTick = HAL_GetTick();
+//        }
         break;
       case 1:
         g_mapDynamixel[g_ucSelectMotor].Dxl_Ping();   
@@ -378,6 +546,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
       case 3:
         break;
       case 4:
+        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
         g_mapDynamixel[g_ucSelectMotor].xTransmitDxlWPacket(LED,1,1);
         g_usMainFlag = 0;
         break;
@@ -385,7 +554,185 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
         g_mapDynamixel[g_ucSelectMotor].xTransmitDxlWPacket(LED,0,1);
         g_usMainFlag = 0;
         break;
+      case 6:
+        switch(g_ucMotorStateFlag){
+        case HOMING_INIT:
+          g_mapDynamixel[0].xInitDxl(4,1);
+          HAL_Delay(5);
+          g_mapDynamixel[1].xInitDxl(4,1);
+          HAL_Delay(5);
+          g_bPostionReadFlag = true;
+          g_ucMotorStateFlag = HOMING_FIRST_GOAL_POS;
+          break;
+        case HOMING_FIRST_GOAL_POS:
+          HAL_Delay(2);
+          g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripInitPos,4);
+          HAL_Delay(2);
+          g_mapDynamixel[1].xTransmitDxlWPacket(GOAL_POSITION,g_iInitPos,4);
+          g_ucMotorStateFlag = HOMING_CHECK_PHOTO;
+          break;
+        case HOMING_CHECK_PHOTO:
+          if(g_bPhotoFlag == false){
+            if(g_mapDynamixel[0].bGetPhotoFlag()){
+              g_iPhotoDelayTick = HAL_GetTick();
+              g_ucMotorStateFlag = HOMING_PHOTO_DELAY;
+              g_bPhotoFlag = true;
+              }
+          }
+          break;
+      case HOMING_PHOTO_DELAY:
+        if(HAL_GetTick() -  g_iPhotoDelayTick > g_iPhotoDelayTime){
+          HAL_Delay(2);
+          g_mapDynamixel[1].xTransmitDxlWPacket(GOAL_POSITION,g_iPosGoal1,4);
+          HAL_Delay(2);
+          g_ucMotorStateFlag = HOMING_GOTO_POSITION1;
+        }
+        break;
+        case HOMING_GOTO_POSITION1:
+          if(abs(g_mapDynamixel[1].iGetPos() - g_iPosGoal1) < g_iPosGoalOffset){
+            HAL_Delay(2);
+            g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripPos,4);
+            HAL_Delay(2);
+            g_ucMotorStateFlag = HOMING_GOTO_HOME;
+          }
+          break;
+        case HOMING_GOTO_HOME:
+          if(abs(g_mapDynamixel[0].iGetPos() - g_iGripPos) < g_iGripPosOffset){
+            HAL_Delay(2);
+            g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripOffPos,4);
+            HAL_Delay(2);
+            g_ucMotorStateFlag = HOMING_GOTO_POSITION2;
+          }
+          break;
+        case HOMING_GOTO_POSITION2:
+          if(g_mapDynamixel[0].iGetPos() == g_iGripOffPos){
+            HAL_Delay(2);
+            g_mapDynamixel[1].xTransmitDxlWPacket(GOAL_POSITION,g_iPosGoal2,4);
+            HAL_Delay(2);
+            g_ucMotorStateFlag = HOMING_CHECK_POSITION2;
+          }
+          break;
+        case HOMING_CHECK_POSITION2:
+          if(abs(g_mapDynamixel[1].iGetPos() - g_iPosGoal2) < g_iPosGoalOffset){
+            HAL_Delay(2);
+            g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripPos,4);
+            HAL_Delay(2);
+            g_ucMotorStateFlag = HOMING_GRIP_POSITION2;
+          }
+          break;
+        case HOMING_GRIP_POSITION2:
+          if(abs(g_mapDynamixel[0].iGetPos() - g_iGripPos) < g_iGripPosOffset){
+            HAL_Delay(2);
+            g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripOffPos,4);
+            HAL_Delay(2);
+            g_mapDynamixel[1].xTransmitDxlWPacket(GOAL_POSITION,g_iInitPos,4);
+            HAL_Delay(2);
+            g_ucMotorStateFlag = HOMING_GRIP_INIT;
+          }
+          break;
+        case HOMING_GRIP_INIT:
+          if(abs(g_mapDynamixel[0].iGetPos() - g_iGripOffPos) < g_iGripPosOffset){
+            HAL_Delay(2);
+            g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripInitPos,4);
+            HAL_Delay(2);
+            g_ucMotorStateFlag = HOMING_PIPE_TAKE;
+          }
+          break;
+        case HOMING_PIPE_TAKE:
+          if(g_mapDynamixel[0].bGetPhotoFlag() == false){
+            HAL_Delay(2);
+            g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iGripInitPos,4);
+            HAL_Delay(2);
+            g_bPhotoFlag = false;
+            g_ucMotorStateFlag = HOMING_CHECK_PHOTO;
+          }
+          break;
+        }
+        break;
+      case 7:
+        if(g_bResetFlag == false){
+        g_mapDynamixel[0].xTransmitFacReset(0x02);
+        HAL_Delay(5);
+        g_mapDynamixel[1].xTransmitFacReset(0x02);
+        HAL_Delay(5);
+        g_bResetFlag = true;
+        g_uiSpeedTick = HAL_GetTick();
+        }
+        if(g_bResetFlag == true &&HAL_GetTick() - g_uiSpeedTick > 5000){
+          g_bResetFlag = false;
+          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,GPIO_PIN_RESET);
+          g_usMainFlag =6;
+          g_uiSpeedTick = HAL_GetTick();
+        }
+        break;
+      case 8:
+          g_mapDynamixel[0].xTransmitFacReset(0x02);
+          g_usMainFlag =0;
+          break;
+      case 9:
+        g_mapDynamixel[1].xTransmitFacReset(0x02);
+        g_usMainFlag = 0;
+        break;
+      case 10:
+        g_mapDynamixel[0].xTransmitDxlWPacket(LED,0,1);
+        g_usMainFlag = 0;
+        break;
+      case 11:
+        HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_RESET);
+        g_usMainFlag =0;
+        break;
+      case 12:
+        HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,GPIO_PIN_RESET);
+        g_usMainFlag =0;
+        break;
+      case 13:
+                g_mapDynamixel[0].xTransmitFacReset(0x02);
+                g_usMainFlag = 0;
+                break;
+      case 14:
+        g_mapDynamixel[0].Dxl_Ping();
+        g_usMainFlag = 0;
+      case 15:
+//        g_mapDynamixel[0].xTransmitDxlWPacket(
+        break;
+      case 16:
+        g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_VELOCITY,g_TargetVel,4);
+        g_usMainFlag = 0;
+        break;
+      case 17:
+        g_mapDynamixel[0].xInitDxl(1,1);
+        g_usMainFlag = 0;
+      break;
+      case 18:
+         g_mapDynamixel[0].xInitDxl(4,1);
+         g_usMainFlag = 0;
+         break;
+      case 19:
+//        g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_uiDownPos,4);
+        g_usMainFlag = 0;
+        break;
+      case 20:
+        g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,1600&0xFFFF,4);
+        g_usMainFlag = 0;
+        break;
+      case 21:
+        g_mapDynamixel[0].xTransmitDxlRPacket(PRESENT_POSITION,4);
+        g_usMainFlag = 0;
+        break;
+      case 22:
+        g_mapDynamixel[0].xTransmitDxlWPacket(TORQUE_ADDR,0,1);
+        g_usMainFlag = 0;
+        break;
     }
+  }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  //Right PB10
+  if(GPIO_Pin == GPIO_PIN_1){
+    bool l_bPhotoOut = HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1);
+    g_mapDynamixel[0].xSetPhotoFlag(l_bPhotoOut);
   }
 }
 
@@ -393,9 +740,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
   if(huart->Instance == USART1){
     g_mapDynamixel[g_ucSelectMotor].xSetTxPacketZero();
     g_dynamixelHandler.xSetTxFlag(true);
-    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
-//    HAL_HalfDuplex_EnableReceiver(&huart1);
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
+    HAL_HalfDuplex_EnableReceiver(&huart1);
     HAL_UARTEx_ReceiveToIdle_DMA(&huart1,g_pucRxBuffer,PACKET_SIZE);
+//    HAL_UARTEx_ReceiveToIdle_IT(&huart1,g_pucRxBuffer,PACKET_SIZE);    
   }
 }
 
