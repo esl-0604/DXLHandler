@@ -1,5 +1,11 @@
 #pragma once
 
+//Dyanmixel Init
+#define DYNAMIXEL_NUM   2
+#define DYNAMIXEL_ID_FIR   5
+#define DYNAMIXEL_ID_SEC   6
+
+
 //Packet setting
 #define PACKET_SIZE         32
 #define PACKET_NUMBER       8
@@ -10,6 +16,8 @@
 #define PING_PACKET_SIZE    14
 #define REBOOT_PACKET_SIZE  11
 #define MAX_SYNCID_NUM      9
+
+#define PACKET_SIZE_4BYTE 4
 
 //Instruction Protocol
 #define PING_INST           0x01U

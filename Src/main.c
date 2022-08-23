@@ -45,67 +45,46 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
- TIM_HandleTypeDef htim11;
+TIM_HandleTypeDef htim11;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
+
+
+//Timer_Counter
 uint32_t g_uiTim11Cnt = 0;
 
+/*--------------------------------*/
 //Dynamixel
 uint8_t g_ucSelectMotor = 0;
+int8_t g_cMode = 3;
+uint8_t g_ucMotorNum = 2;
+
+//parsing Var
 uint8_t g_ucSize = 25;
 uint8_t g_pucRxBuffer[PACKET_SIZE] = {0, };
-
-int8_t g_cMode = 3;
+int32_t g_iParsingData =0;
 
 uint8_t g_ucMotorStateFlag = 0;
-
-int32_t g_iParsingData =0;
-int32_t g_iMotorTargetPos1 = -200;
-int32_t g_iMotorTargetPos2 = 1400;
 int32_t g_uiPosReadTick = 0;
 int32_t g_uiPosReadDelay = 250;
-int32_t g_iGoalVelUp = 150;
-int32_t g_iGoalVelDown = -150;
 
-bool g_bMotorBackFlag = false;
 bool g_bPostionReadFlag = false;
-bool g_bMotorCompFlag = false;
-
-
-int32_t g_TargetVel = -50; 
-
-int32_t g_iOffeset = 1800;
+bool g_bSyncPostionReadFlag = false;
 
 DynamixelHandler g_dynamixelHandler(&huart1);
-Dynamixel g_mapDynamixel[2] = {Dynamixel(&g_dynamixelHandler,1),Dynamixel(&g_dynamixelHandler,6)};
+Dynamixel g_mapDynamixel[DYNAMIXEL_NUM] = {Dynamixel(&g_dynamixelHandler,DYNAMIXEL_ID_FIR),Dynamixel(&g_dynamixelHandler,DYNAMIXEL_ID_SEC)};
 
 //main Control Flag
 
-int32_t g_uiDownPos = -220;
-
-uint16_t g_usMainFlag = 21;
-
-uint8_t MotorOpFlag = 0;
-uint8_t MotorPreOpFlag = 0;
-bool g_bWaitFlag = false;
-bool g_bMotorInitFlag = false;
-bool g_bMotorOPFlag = false;
-bool g_bMotorStopFlag = false;
-
-bool g_bMotorFlag1 = false;
-bool g_bMotorFlag2 = false;
-
-bool g_bResetFlag = false;
-uint8_t g_ucMotorSpeedState =0;
+uint16_t g_usMainFlag = 0;
 
 uint32_t g_uiTick =0;
 uint32_t g_uiTargetTick =100;
-uint32_t g_uiSpeedTick =0;
-uint32_t g_uiSpeedTargetTick =400;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -158,7 +137,6 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim11);
-  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -350,12 +328,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -369,26 +341,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB14 */
-  GPIO_InitStruct.Pin = GPIO_PIN_14;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PC7 PC8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PC10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -400,86 +352,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
         g_dynamixelHandler.xSetParsingFlag(false);
       }
     }
-      if(HAL_GetTick()-g_uiTick > g_uiTargetTick){        
-        if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_8) == GPIO_PIN_RESET){
-          if(g_bMotorFlag1 == false){
-          g_bMotorOPFlag = true;
-          }
-        g_uiTick = HAL_GetTick();
-        }
-      if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_9) == GPIO_PIN_RESET){
-        if(g_bMotorFlag2 == false){
-          g_bMotorStopFlag = true;
-        }
-        g_uiTick = HAL_GetTick();
-        }
-      }
       if(g_bPostionReadFlag){
         if(HAL_GetTick() - g_uiPosReadTick > g_uiPosReadDelay){
-          g_mapDynamixel[0].xTransmitDxlRPacket(PRESENT_POSITION,4);
+          g_mapDynamixel[0].xTransmitDxlRPacket(PRESENT_POSITION,PACKET_SIZE_4BYTE);
           g_uiPosReadTick = HAL_GetTick();
         }
       }
-    
+      if(g_bSyncPostionReadFlag){
+        if(HAL_GetTick() - g_uiPosReadTick > g_uiPosReadDelay){
+          g_mapDynamixel[0].ReceiveSyncDxlPacket(PRESENT_POSITION,PACKET_SIZE_4BYTE,DYNAMIXEL_NUM,5,6);
+          g_uiPosReadTick = HAL_GetTick();
+        }
+      }
       switch(g_usMainFlag){
       case 0:
-//        if(HAL_GetTick()-g_uiSpeedTick > 500){
-//          g_usMainFlag = 7;
-//          g_uiSpeedTick = HAL_GetTick();
-//        }
-        break;
-      case 21:
-         if(g_bMotorStopFlag == true){
-          g_mapDynamixel[0].xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-          g_bMotorFlag2 = false;
-          g_bMotorStopFlag = false;
-        }
-        switch(g_ucMotorStateFlag){
-        case 0:
-//          g_mapDynamixel[0].xTransmitFacReset(0x02);
-//          g_uiSpeedTick = HAL_GetTick();
-          g_ucMotorStateFlag = 1;
-          break;
-        case 1:
-////          HAL_Delay(5000);
-//          if(HAL_GetTick()- g_uiSpeedTick >  5000000){
-//            g_ucMotorStateFlag = 2;
-//          }
-        case 2:
-          g_mapDynamixel[0].xInitDxl(4,1);
-          HAL_Delay(2);                 
-          g_mapDynamixel[0].xTransmitDxlWPacket(LED,1,1);
-          HAL_Delay(2);
-          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_RESET);
-          g_bMotorInitFlag = true;
-          g_bPostionReadFlag = true;
-          g_ucMotorStateFlag = 3;
-          break;
-        case 3:
-          if(g_bMotorOPFlag == true){
-          g_iMotorTargetPos1 = -200; //g_mapDynamixel[0].iGetCurrentPosition()-g_iOffeset;
-          g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iMotorTargetPos1,4);
-          g_bMotorOPFlag = false;
-          g_bMotorBackFlag = true;
-        }
-          if(g_bMotorBackFlag == true && (abs(g_mapDynamixel[0].iGetCurrentPosition() - g_iMotorTargetPos1) <21) )
-        {
-//          g_iMotorTargetPos2 = 1400;//g_iMotorTargetPos1+g_iOffeset;
-          g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iMotorTargetPos2,4);
-          g_bMotorBackFlag = false;
-          g_bMotorCompFlag = true;
-        }
-        if(g_mapDynamixel[0].iGetCurrentPosition() == g_iMotorTargetPos2){
-          g_bMotorCompFlag = false;
-          g_bMotorFlag1 = false;
-        }
-        break;
-        case 4:
-          
-          break;
-        default:
-          break;
-        }
         break;
       case 1:
         g_mapDynamixel[g_ucSelectMotor].Dxl_Ping();   
@@ -492,120 +378,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
       case 3:
         break;
       case 4:
-        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
         g_mapDynamixel[g_ucSelectMotor].xTransmitDxlWPacket(LED,1,1);
         g_usMainFlag = 0;
         break;
       case 5:
         g_mapDynamixel[g_ucSelectMotor].xTransmitDxlWPacket(LED,0,1);
-        g_usMainFlag = 0;
-        break;
-      case 6:
-        if(g_bMotorInitFlag == false){
-          g_mapDynamixel[0].xInitDxl(4,1);
-          HAL_Delay(2);
-          g_mapDynamixel[0].xTransmitDxlWPacket(POSITION_I_GAIN,10,4);
-          HAL_Delay(2);
-          g_mapDynamixel[0].xTransmitDxlWPacket(POSITION_D_GAIN,10,4);
-          HAL_Delay(2);                 
-          g_mapDynamixel[0].xTransmitDxlWPacket(LED,1,1);
-          HAL_Delay(2);
-          HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,GPIO_PIN_RESET);
-          g_bMotorInitFlag = true;
-          g_bPostionReadFlag = true;
-        }
-        if(g_bMotorOPFlag == true){
-          g_iMotorTargetPos1 = g_uiDownPos; //g_mapDynamixel[0].iGetCurrentPosition()-g_iOffeset;
-          g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_iMotorTargetPos1,4);
-          g_bMotorOPFlag = false;
-          g_bMotorBackFlag = true;
-        }
-        if(g_bMotorStopFlag == true){
-          g_mapDynamixel[0].xTransmitDxlWPacket(TORQUE_ADDR,0,1);
-          g_bMotorFlag2 = false;
-          g_bMotorStopFlag = false;
-        }
-        
-        if(g_bMotorBackFlag == true && ((g_mapDynamixel[0].iGetCurrentPosition() < -190) ))
-        {
-          g_iMotorTargetPos2 = 1400;//g_iMotorTargetPos1+g_iOffeset;
-          g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,1600,4);
-          g_bMotorBackFlag = false;
-          g_bMotorCompFlag = true;
-        }
-        if(g_mapDynamixel[0].iGetCurrentPosition() == g_iMotorTargetPos2){
-          g_bMotorCompFlag = false;
-          g_bMotorFlag1 = false;
-        }
-          
-        break;
-      case 7:
-        if(g_bResetFlag == false){
-        HAL_Delay(30);
-        g_mapDynamixel[0].xTransmitFacReset(0x02);
-        HAL_Delay(5);
-        g_bResetFlag = true;
-        g_uiSpeedTick = HAL_GetTick();
-        }
-        if(g_bResetFlag == true &&HAL_GetTick() - g_uiSpeedTick > 5000){
-          g_bResetFlag = false;
-          g_usMainFlag =6;
-          g_uiSpeedTick = HAL_GetTick();
-        }
-        break;
-      case 8:
-          g_mapDynamixel[0].xInitDxl(1,1);
-          HAL_Delay(5);
-          g_mapDynamixel[0].xTransmitDxlWPacket(LED,1,1);
-          HAL_Delay(5);
-          g_mapDynamixel[1].xInitDxl(1,1);
-          HAL_Delay(5);
-          g_mapDynamixel[1].xTransmitDxlWPacket(LED,1,1);
-          g_usMainFlag =0;
-          break;
-      case 9:
-        g_mapDynamixel[0].xTransmitDxlWPacket(LED,1,1);
-        g_usMainFlag = 0;
-        break;
-      case 10:
-        g_mapDynamixel[0].xTransmitDxlWPacket(LED,0,1);
-        g_usMainFlag = 0;
-        break;
-      case 11:
-        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_SET);
-        g_usMainFlag =0;
-        break;
-      case 12:
-        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_RESET);
-        g_usMainFlag =0;
-        break;
-      case 13:
-                g_mapDynamixel[0].xTransmitFacReset(0x02);
-                g_usMainFlag = 0;
-                break;
-      case 14:
-        g_mapDynamixel[0].Dxl_Ping();
-        g_usMainFlag = 0;
-      case 15:
-//        g_mapDynamixel[0].xTransmitDxlWPacket(
-        break;
-      case 16:
-        g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_VELOCITY,g_TargetVel,4);
-        g_usMainFlag = 0;
-      case 17:
-        g_mapDynamixel[0].xInitDxl(1,1);
-        g_usMainFlag = 0;
-      break;
-      case 18:
-         g_mapDynamixel[0].xInitDxl(4,1);
-         g_usMainFlag = 0;
-         break;
-      case 19:
-        g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,g_uiDownPos,4);
-        g_usMainFlag = 0;
-        break;
-      case 20:
-        g_mapDynamixel[0].xTransmitDxlWPacket(GOAL_POSITION,1600&0xFFFF,4);
         g_usMainFlag = 0;
         break;
     }
