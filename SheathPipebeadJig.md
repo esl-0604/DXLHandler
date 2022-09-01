@@ -30,6 +30,8 @@
 
 - g_ucMotorStateFlag로 다이나믹셀의 동작 State를 결정
 
+- 해당 State는 아래와 같다.
+
 **HOMING_INIT**
 
 - 각 모터를 Multi-turn 모드로 설정하여 위치제어
