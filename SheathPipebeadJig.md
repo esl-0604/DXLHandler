@@ -86,5 +86,21 @@
 
 ## 알아야 하는 사항
 
+# 포토센서
+
 - 포토센서의 구동전압은 5V로 설정
+
+![포토센서데이터시트](/uploads/8a2bf40e23c5360e8f096aa65f5af739/포토센서데이터시트.png)
+
+![포토센서데이터시트2](/uploads/aa45fa169fcd8781e23ef89972f3e4c0/포토센서데이터시트2.png)
+
+- Load Current는 50mA로 Vcc(갈색)과 Output 1 Transistor(검은색)을 110옴으로 연결
+
+- 50mA일 때 residual Voltage(On 상태일때 트랜지스터에서 소모하는 전압)은 0.7V
+
+- 포토센서는 커넥터는 (Molex) 5264-04핀으로 커넥터 작업은 아래와 같음
+
+![포토센서핀연결](/uploads/b62bbbb94e643aebbe6b668ec08d9bd7/포토센서핀연결.jpg)
+
+- 출력은 Light On : HIGH , Light OFF : LOW
 
