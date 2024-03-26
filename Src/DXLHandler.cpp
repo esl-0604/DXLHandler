@@ -27,6 +27,65 @@ DXLHandler::~DXLHandler(){
 }
 
 
+
+// DXL Handler Interface -----------------------------------------------------------------------------------
+uint8_t DXLHandler::GetDXLStatusOperatingMode(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucOperatingMode);
+}
+
+int32_t DXLHandler::GetDXLStatusHomingOffset(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nHomingOffset);
+}
+
+int32_t DXLHandler::GetDXLStatusMaxPositionLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nMaxPositionLimit);
+}
+
+int32_t DXLHandler::GetDXLStatusMinPositionLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nMinPositionLimit);
+}
+
+uint8_t DXLHandler::GetDXLStatusTorqueEnable(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucTorqueEnable);
+}
+
+uint8_t DXLHandler::GetDXLStatusLED(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucLED);
+}
+
+uint8_t DXLHandler::GetDXLStatusMoving(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucMoving);
+}
+
+uint8_t DXLHandler::GetDXLStatusStatusReturnLevel(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucStatusReturnLevel);
+}
+
+int32_t DXLHandler::GetDXLStatusGoalCurrent(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nGoalCurrent);
+}
+
+int32_t DXLHandler::GetDXLStatusGoalVelocity(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nGoalVelocity);
+}
+
+int32_t DXLHandler::GetDXLStatusGoalPosition(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nGoalPosition);
+}
+
+int32_t DXLHandler::GetDXLStatusPresentCurrent(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nPresentCurrent);
+}
+
+int32_t DXLHandler::GetDXLStatusPresentVelocity(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nPresentVelocity);
+}
+
+int32_t DXLHandler::GetDXLStatusPresentPosition(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nPresentPosition);
+}
+
+
 // DXL Handler Interface -----------------------------------------------------------------------------------
 void DXLHandler::SetDXLMapInit(uint8_t* pucIdList){
 	for(size_t i=0; i<this->_ucTotalDXLCnt; ++i){
@@ -95,14 +154,34 @@ void DXLHandler::ParsingRxData(){
 				this->_mDXLStatusList[ucID]->nHomingOffset = nDataValue;
 				break;
 
+			case P_CURRENT_LIMIT:
+				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_2_BYTE);
+				this->_mDXLStatusList[ucID]->nCurrentLimit = nDataValue;
+				break;
+
+			case P_VELOCITY_LIMIT:
+				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_4_BYTE);
+				this->_mDXLStatusList[ucID]->nVelocityLimit = nDataValue;
+				break;
+
+			case P_MAX_POSITION_LIMIT:
+				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_4_BYTE);
+				this->_mDXLStatusList[ucID]->nMaxPositionLimit = nDataValue;
+				break;
+
+			case P_MIN_POSITION_LIMIT:
+				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_4_BYTE);
+				this->_mDXLStatusList[ucID]->nMinPositionLimit = nDataValue;
+				break;
+
 			case P_TORQUE_ENABLE:
 				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_1_BYTE);
-				this->_mDXLStatusList[ucID]->bIsTorqueEnable = nDataValue ? true : false;
+				this->_mDXLStatusList[ucID]->ucTorqueEnable = nDataValue;
 				break;
 
 			case P_LED:
 				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_1_BYTE);
-				this->_mDXLStatusList[ucID]->bIsLEDOn = nDataValue ? true : false;
+				this->_mDXLStatusList[ucID]->ucLED = nDataValue;
 				break;
 
 			case P_GOAL_CURRENT:
@@ -122,7 +201,7 @@ void DXLHandler::ParsingRxData(){
 
 			case P_MOVING:
 				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_1_BYTE);
-				this->_mDXLStatusList[ucID]->bIsMoving =  nDataValue ? true : false;
+				this->_mDXLStatusList[ucID]->ucMoving =  nDataValue;
 				break;
 
 			case P_PRESENT_CURRENT:
@@ -149,7 +228,7 @@ void DXLHandler::ParsingRxData(){
 
 
 	// Debuging 코드 ---------------------------------------
-//	g_tDebugStatus[ucID] = *(this->_mDXLStatusList[ucID]);
+	g_tDebugStatus[ucID] = *(this->_mDXLStatusList[ucID]);
 	// Debuging 코드 ---------------------------------------
 
 
@@ -256,6 +335,29 @@ void DXLHandler::ReadHomingOffset(uint8_t ucID){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, HOMING_OFFSET_ADDR, DXL_DATA_4_BYTE) );
 }
 
+void DXLHandler::ReadCurrentLimit(uint8_t ucID){
+	this->_ucParsingType = P_CURRENT_LIMIT;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, CURRENT_LIMIT_ADDR, DXL_DATA_2_BYTE) );
+}
+
+void DXLHandler::ReadVelocityLimit(uint8_t ucID){
+	this->_ucParsingType = P_VELOCITY_LIMIT;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, VELOCITY_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::ReadMaxPositionLimit(uint8_t ucID){
+	this->_ucParsingType = P_MAX_POSITION_LIMIT;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, MAX_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::ReadMinPositionLimit(uint8_t ucID){
+	this->_ucParsingType = P_MIN_POSITION_LIMIT;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, MIN_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
 
 void DXLHandler::ReadTorqueEnable(uint8_t ucID){
 	this->_ucParsingType = P_TORQUE_ENABLE;
@@ -293,7 +395,6 @@ void DXLHandler::ReadMoving(uint8_t ucID){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, MOVING_ADDR, DXL_DATA_1_BYTE) );
 }
 
-
 void DXLHandler::ReadPresentCurrent(uint8_t ucID){
 	this->_ucParsingType = P_PRESENT_CURRENT;
 	this->_ucTxIdCnt = 1;
@@ -319,10 +420,34 @@ void DXLHandler::WriteOperatingMode(uint8_t ucID, int32_t nOperatingMode){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nOperatingMode, OPERATING_MODE_ADDR, DXL_DATA_1_BYTE) );
 }
 
-void DXLHandler::WriteHomingOffset(uint8_t ucID, int32_t sHomingOffset){
+void DXLHandler::WriteHomingOffset(uint8_t ucID, int32_t nHomingOffset){
 	this->_ucParsingType = P_WRITE;
 	this->_ucTxIdCnt = 1;
-	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, sHomingOffset, HOMING_OFFSET_ADDR, DXL_DATA_4_BYTE) );
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nHomingOffset, HOMING_OFFSET_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::WriteCurrentLimit(uint8_t ucID, int32_t nCurrentLimit){
+	this->_ucParsingType = P_WRITE;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nCurrentLimit, CURRENT_LIMIT_ADDR, DXL_DATA_2_BYTE) );
+}
+
+void DXLHandler::WriteVelocityLimit(uint8_t ucID, int32_t nVelocityLimit){
+	this->_ucParsingType = P_WRITE;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nVelocityLimit, VELOCITY_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::WriteMaxPositionLimit(uint8_t ucID, int32_t nMaxPositionLimit){
+	this->_ucParsingType = P_WRITE;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nMaxPositionLimit, MAX_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::WriteMinPositionLimit(uint8_t ucID, int32_t nMinPositionLimit){
+	this->_ucParsingType = P_WRITE;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nMinPositionLimit, MIN_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
 }
 
 void DXLHandler::WriteTorqueEnableON(uint8_t ucID){
@@ -381,6 +506,30 @@ void DXLHandler::SyncReadHomingOffset(uint8_t ucIdNum, uint8_t* pucIdList){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, HOMING_OFFSET_ADDR, DXL_DATA_4_BYTE) );
 }
 
+void DXLHandler::SyncReadCurrentLimit(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_CURRENT_LIMIT;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, CURRENT_LIMIT_ADDR, DXL_DATA_2_BYTE) );
+}
+
+void DXLHandler::SyncReadVelocityLimit(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_VELOCITY_LIMIT;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, VELOCITY_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::SyncReadMaxPositionLimit(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_MAX_POSITION_LIMIT;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, MAX_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::SyncReadMinPositionLimit(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_MIN_POSITION_LIMIT;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, MIN_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
 void DXLHandler::SyncReadTorqueEnable(uint8_t ucIdNum, uint8_t* pucIdList){
 	this->_ucParsingType = P_TORQUE_ENABLE;
 	this->_ucTxIdCnt = ucIdNum;
@@ -425,7 +574,7 @@ void DXLHandler::SyncReadPresentPosition(uint8_t ucIdNum, uint8_t* pucIdList){
 
 
 // DXL Sync Write Call -------------------------------------------------------------------------------------
-void DXLHandler::WriteOperatingMode(uint8_t ucIdNum, int32_t* pnTargetParams){
+void DXLHandler::SyncWriteOperatingMode(uint8_t ucIdNum, int32_t* pnTargetParams){
 	this->_ucParsingType = P_SYNC_WRITE;
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, OPERATING_MODE_ADDR, DXL_DATA_1_BYTE) );
 }
@@ -433,6 +582,26 @@ void DXLHandler::WriteOperatingMode(uint8_t ucIdNum, int32_t* pnTargetParams){
 void DXLHandler::SyncWriteHomingOffset(uint8_t ucIdNum, int32_t* pnTargetParams){
 	this->_ucParsingType = P_SYNC_WRITE;
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, HOMING_OFFSET_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::SyncWriteCurrentLimit(uint8_t ucIdNum, int32_t* pnTargetParams){
+	this->_ucParsingType = P_SYNC_WRITE;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, CURRENT_LIMIT_ADDR, DXL_DATA_2_BYTE) );
+}
+
+void DXLHandler::SyncWriteVelocityLimit(uint8_t ucIdNum, int32_t* pnTargetParams){
+	this->_ucParsingType = P_SYNC_WRITE;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, VELOCITY_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::SyncWriteMaxPositionLimit(uint8_t ucIdNum, int32_t* pnTargetParams){
+	this->_ucParsingType = P_SYNC_WRITE;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, MAX_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
+}
+
+void DXLHandler::SyncWriteMinPositionLimit(uint8_t ucIdNum, int32_t* pnTargetParams){
+	this->_ucParsingType = P_SYNC_WRITE;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, MIN_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
 }
 
 void DXLHandler::SyncWriteTorqueEnable(uint8_t ucIdNum, int32_t* pnTargetParams){
