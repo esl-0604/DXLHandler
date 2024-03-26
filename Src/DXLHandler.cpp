@@ -184,6 +184,11 @@ void DXLHandler::ParsingRxData(){
 				this->_mDXLStatusList[ucID]->ucLED = nDataValue;
 				break;
 
+			case P_STATUS_RETURN_LEVEL:
+				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_1_BYTE);
+				this->_mDXLStatusList[ucID]->ucStatusReturnLevel = nDataValue;
+				break;
+
 			case P_GOAL_CURRENT:
 				nDataValue = this->CalculateParams(pucTargetParams, DXL_DATA_2_BYTE);
 				this->_mDXLStatusList[ucID]->nGoalCurrent = nDataValue;
@@ -371,6 +376,12 @@ void DXLHandler::ReadLED(uint8_t ucID){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, LED_ADDR, DXL_DATA_1_BYTE) );
 }
 
+void DXLHandler::ReadStatusReturnLevel(uint8_t ucID){
+	this->_ucParsingType = P_STATUS_RETURN_LEVEL;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxReadPacket(ucID, STATUS_RETURN_LEVEL_ADDR, DXL_DATA_1_BYTE) );
+}
+
 void DXLHandler::ReadGoalCurrent(uint8_t ucID){
 	this->_ucParsingType = P_GOAL_CURRENT;
 	this->_ucTxIdCnt = 1;
@@ -474,6 +485,12 @@ void DXLHandler::WriteLEDOff(uint8_t ucID){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, DXL_DISABLE, LED_ADDR, DXL_DATA_1_BYTE) );
 }
 
+void DXLHandler::WriteStatusReturnLevel(uint8_t ucID, int32_t nStatusReturnLevel){
+	this->_ucParsingType = P_WRITE;
+	this->_ucTxIdCnt = 1;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nStatusReturnLevel, STATUS_RETURN_LEVEL_ADDR, DXL_DATA_1_BYTE) );
+}
+
 void DXLHandler::WriteGoalCurrent(uint8_t ucID, int32_t nGoalCurrent){
 	this->_ucParsingType = P_WRITE;
 	this->_ucTxIdCnt = 1;
@@ -540,6 +557,12 @@ void DXLHandler::SyncReadLED(uint8_t ucIdNum, uint8_t* pucIdList){
 	this->_ucParsingType = P_LED;
 	this->_ucTxIdCnt = ucIdNum;
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, LED_ADDR, DXL_DATA_1_BYTE) );
+}
+
+void DXLHandler::SyncReadStatusReturnLevel(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_STATUS_RETURN_LEVEL;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, STATUS_RETURN_LEVEL_ADDR, DXL_DATA_1_BYTE) );
 }
 
 void DXLHandler::SyncReadGoalPosition(uint8_t ucIdNum, uint8_t* pucIdList){
@@ -612,6 +635,11 @@ void DXLHandler::SyncWriteTorqueEnable(uint8_t ucIdNum, int32_t* pnTargetParams)
 void DXLHandler::SyncWriteLED(uint8_t ucIdNum, int32_t* pnTargetParams){
 	this->_ucParsingType = P_SYNC_WRITE;
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, LED_ADDR, DXL_DATA_1_BYTE) );
+}
+
+void DXLHandler::SyncWriteStatusReturnLevel(uint8_t ucIdNum, int32_t* pnTargetParams){
+	this->_ucParsingType = P_SYNC_WRITE;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, STATUS_RETURN_LEVEL_ADDR, DXL_DATA_1_BYTE) );
 }
 
 void DXLHandler::SyncWriteGoalCurrent(uint8_t ucIdNum, int32_t* pnTargetParams){

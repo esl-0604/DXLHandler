@@ -82,25 +82,26 @@
 #define DXL_REGISTER_ERR			0x07U
 
 // Parsing Type
-#define NO_INST								0x00U
-#define P_WRITE								0x01U
-#define P_SYNC_WRITE					0x02U
-#define P_PING								0x03U
-#define P_OPERATING_MODE			0x04U
-#define P_HOMING_OFFSET				0x05U
-#define P_CURRENT_LIMIT				0x06U
-#define P_VELOCITY_LIMIT			0x07U
-#define P_MAX_POSITION_LIMIT	0x08U
-#define P_MIN_POSITION_LIMIT	0x09U
-#define P_TORQUE_ENABLE				0x0AU
-#define P_LED									0x0BU
-#define P_GOAL_CURRENT				0x0CU
-#define P_GOAL_VELOCITY				0x0DU
-#define P_GOAL_POSITION				0x0EU
-#define P_MOVING							0x0FU
-#define P_PRESENT_CURRENT			0x10U
-#define P_PRESENT_VELOCITY		0x11U
-#define P_PRESENT_POSITION		0x12U
+#define NO_INST									0x00U
+#define P_WRITE									0x01U
+#define P_SYNC_WRITE						0x02U
+#define P_PING									0x03U
+#define P_OPERATING_MODE				0x04U
+#define P_HOMING_OFFSET					0x05U
+#define P_CURRENT_LIMIT					0x06U
+#define P_VELOCITY_LIMIT				0x07U
+#define P_MAX_POSITION_LIMIT		0x08U
+#define P_MIN_POSITION_LIMIT		0x09U
+#define P_TORQUE_ENABLE					0x0AU
+#define P_LED										0x0BU
+#define P_STATUS_RETURN_LEVEL		0x0CU
+#define P_GOAL_CURRENT					0x0DU
+#define P_GOAL_VELOCITY					0x0EU
+#define P_GOAL_POSITION					0x0FU
+#define P_MOVING								0x10U
+#define P_PRESENT_CURRENT				0x11U
+#define P_PRESENT_VELOCITY			0x12U
+#define P_PRESENT_POSITION			0x13U
 
 // DXL Packet Index
 #define DXL_PACKET_ID								4
