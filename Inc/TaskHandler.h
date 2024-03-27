@@ -52,6 +52,9 @@
 #define PWM_MIN			0
 
 
+// Photo Sensor Interface
+#define FAST_SPEED			200
+#define SLOW_SPEED			10
 
 #include <stdint.h>
 #include <stdbool.h>
