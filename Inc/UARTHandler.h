@@ -10,7 +10,6 @@
 
 #pragma once
 #include <stdint.h>
-#include <stdbool.h>
 #include "Packet.h"
 #include "DXLDefine.h"
 

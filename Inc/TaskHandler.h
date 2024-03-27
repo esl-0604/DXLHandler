@@ -18,14 +18,7 @@
 
 #define MAIN_HOMING										0x20U
 #define MAIN_HOMING_ERR								0x21U
-#define MAIN_HOMING_SET_VEL_MODE			0x22U
-#define MAIN_HOMING_VEL								0x23U
-#define MAIN_HOMING_CHK_PHOTO					0x24U
-#define MAIN_HOMING_VEL_RE						0x25U
-#define MAIN_HOMING_CHK_PHOTO_RE			0x26U
-#define	MAIN_HOMING_SET_OFFSET				0x27U
-#define MAIN_HOMING_SET_POS_MODE			0x28U
-#define	MAIN_HOMING_SET_INIT_POS			0x29U
+
 
 #define MAIN_IDLE											0x30U
 #define MAIN_IDLE_ERR									0x31U
@@ -46,37 +39,67 @@
 #define DXL_3				3
 #define DXL_4				4
 
+#define HOMING_FAST_FAR_SPEED				-200
+#define HOMING_FAST_CLOSE_SPEED			200
+#define HOMING_SLOW_FAR_SPEED				-10
+#define HOMING_SLOW_CLOSE_SPEED			10
+#define DXL_STOP										0
+
+
+// Photo Sensor Interface
+#define PSENSOR_CNT		2
+#define PSENSOR_1			1
+#define PSENSOR_2			2
+
+
 
 // PWM Interface
 #define PWM_MAX			42000-1
 #define PWM_MIN			0
 
 
-// Photo Sensor Interface
-#define FAST_SPEED			200
-#define SLOW_SPEED			10
+
 
 #include <stdint.h>
 #include <stdbool.h>
 #include "main.h"
 #include "DXLHandler.h"
+#include "PSensorHandler.h"
 
 class DXLHandler;
+class PSensorHandler;
 
 class TaskHandler {
 	// Variables
 	private:
-		DXLHandler* _pDXLHandler;					// 외부에서 이식받을 DXLHandler 객체
-		uint8_t* _pucDXLIDList;						// DXL 전체 ID List
-		uint8_t _ucMainState;							// Main Process State
+		DXLHandler _DXLHandler;							// DXL Handler
+		PSensorHandler _PSensorHandler;			// PhotoSensor Handler
+		uint8_t* _pucDXLIDList;							// DXL 전체 ID List
+		uint8_t* _pucPSencorIDList;					// PhotoSensor 전체 ID List
+
+		uint8_t _ucMainState;								// Main Process State
 
 
 	// Methods
 	public:
-		TaskHandler(DXLHandler* pDXLHandler);
+		TaskHandler(UART_HandleTypeDef* huart);
 		virtual ~TaskHandler();
 
+		// Tx/Rx Interface ------------------------------------------------------------------
+		void TransmitCplt();
+		void RecieveCplt(uint16_t usPacketSize);
+
+
+		// Child Handler Interface ----------------------------------------------------------
+		void DXLInit();
+		void DXLClear();
+		void PSensorInit();
+		void PSensorClear();
+
+
+		// Main Process Interface -----------------------------------------------------------
 		void MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnOperPWM);
+
 };
 
 

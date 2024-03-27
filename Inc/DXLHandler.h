@@ -13,7 +13,6 @@
 #include <map>
 #include <main.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include "Packet.h"
 #include "DXLProtocol.h"
 #include "UARTHandler.h"
@@ -69,6 +68,7 @@ class DXLHandler {
 	public:
 		DXLHandler(UART_HandleTypeDef* huart, uint8_t ucTotalDXLCnt);
 		virtual ~DXLHandler();
+
 
 		// DXL Status Interface ---------------------------------------------------
 		uint8_t GetDXLStatusOperatingMode				(uint8_t ucID);

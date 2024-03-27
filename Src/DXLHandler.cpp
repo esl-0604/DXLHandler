@@ -27,8 +27,7 @@ DXLHandler::~DXLHandler(){
 }
 
 
-
-// DXL Handler Interface -----------------------------------------------------------------------------------
+// DXL Status Interface -----------------------------------------------------------------------------------
 uint8_t DXLHandler::GetDXLStatusOperatingMode(uint8_t ucID){
 	return(this->_mDXLStatusList[ucID]->ucOperatingMode);
 }
