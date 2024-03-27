@@ -19,7 +19,6 @@ class UARTHandler {
   // Variables
 	private:
 		UART_HandleTypeDef* _huart;
-
 		uint8_t _rxBuffer[RX_BUFFER_SIZE];
 		uint8_t _ucDirectionPin;
 

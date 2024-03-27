@@ -12,25 +12,26 @@
 
 // Main State
 #define MAIN_OFF											0x00U
-
 #define MAIN_INIT											0x10U
 #define MAIN_INIT_ERR									0x11U
-
-#define MAIN_HOMING										0x20U
-#define MAIN_HOMING_ERR								0x21U
-
-
-#define MAIN_IDLE											0x30U
-#define MAIN_IDLE_ERR									0x31U
-
+#define MAIN_IDLE											0x20U
+#define MAIN_IDLE_ERR									0x21U
+#define MAIN_HOMING										0x30U
+#define MAIN_HOMING_ERR								0x31U
 #define MAIN_OPERATION								0x40U
 #define MAIN_OPERATION_ERR						0x41U
+#define MAIN_EXIT											0x50U
+#define MAIN_EXIT_ERR									0x51U
 
-#define MAIN_RESET										0x50U
-#define MAIN_RESET_ERR								0x51U
 
-#define MAIN_EXIT											0x60U
-
+// Flag State
+#define FLAG_OFF								0x00U
+#define SYSTEM_START_FLAG				0x01U
+#define SYSTEM_END_FLAG					0x02U
+#define HOMING_START_FLAG				0x03U
+#define HOMING_END_FLAG					0x04U
+#define OPERATION_START_FLAG		0x05U
+#define OPERATION_END_FLAG			0x06U
 
 // DXL Interface
 #define DXL_CNT			4
@@ -50,7 +51,6 @@
 #define PSENSOR_CNT		2
 #define PSENSOR_1			1
 #define PSENSOR_2			2
-
 
 
 // PWM Interface
@@ -76,8 +76,13 @@ class TaskHandler {
 		PSensorHandler _PSensorHandler;			// PhotoSensor Handler
 		uint8_t* _pucDXLIDList;							// DXL 전체 ID List
 		uint8_t* _pucPSencorIDList;					// PhotoSensor 전체 ID List
-
 		uint8_t _ucMainState;								// Main Process State
+
+		// Flag
+		uint8_t _ucSystemFlag;
+		uint8_t _ucHomingFlag;
+		uint8_t _ucOperationFlag;
+
 
 
 	// Methods
@@ -99,6 +104,7 @@ class TaskHandler {
 
 		// Main Process Interface -----------------------------------------------------------
 		void MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnOperPWM);
+		void GPIOInput();
 
 };
 

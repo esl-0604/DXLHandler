@@ -17,6 +17,9 @@ TaskHandler::TaskHandler(UART_HandleTypeDef* huart) : _DXLHandler(huart, DXL_CNT
 	this->_ucMainState = MAIN_OFF;
 	this->_pucDXLIDList = new uint8_t[DXL_CNT];
 	this->_pucPSencorIDList = new uint8_t[PSENSOR_CNT];
+	this->_ucSystemFlag = FLAG_OFF;
+	this->_ucHomingFlag = FLAG_OFF;
+	this->_ucOperationFlag = FLAG_OFF;
 
 	/* USER CODE BEGIN DXL_ID List */
 	_pucDXLIDList[0] = DXL_1;
@@ -66,28 +69,10 @@ void TaskHandler::PSensorClear(){
 
 // Main Process Interface ----------------------------------------------------------------------------------
 void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnOperPWM){
-
-	bool bIsPWSwitchOn = HAL_GPIO_ReadPin(POWER_SW_GPIO_Port, POWER_SW_Pin) ? false : true;
-	bool bIsOPSwitchOn = HAL_GPIO_ReadPin(PULL_UP_IN1_GPIO_Port, PULL_UP_IN1_Pin) ? false : true;
-
-	/* POWER_SW가 활성화되면, 동작을 시작한다. -----------------------------------------------*/
-	if(bIsPWSwitchOn == true){
-		*pnPowerPWM = PWM_MAX;
-	}
-	else{
-		if(this->_ucMainState != MAIN_OFF){
-			this->_ucMainState = MAIN_EXIT;
-		}
-		*pnPowerPWM = PWM_MIN;
-	}
-
-
-	/* Main Process State ---------------------------------------------------------------*/
-
 	switch(this->_ucMainState){
 		/* Main Off -----------------------------------------------*/
 		case MAIN_OFF:
-			if(bIsPWSwitchOn == true){
+			if(this->_ucSystemFlag == SYSTEM_START_FLAG){
 				this->DXLInit();
 				this->PSensorInit();
 				this->_ucMainState = MAIN_INIT;
@@ -97,11 +82,10 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 
 		/* Main Init ----------------------------------------------*/
 		case MAIN_INIT:
-			static bool ucInitCplt = false;
 
 			/* USER CODE BEGIN Init */
 
-			// EX Code
+
 			// ERROM Read
 			this->_DXLHandler.SyncPing();
 			this->_DXLHandler.SyncReadOperatingMode(DXL_CNT, this->_pucDXLIDList);
@@ -127,24 +111,56 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 			this->_DXLHandler.SyncWriteTorqueEnable(DXL_CNT, pnInitParams);
 
 
-			ucInitCplt = true;
 			/* USER CODE END Init */
 
+			if(this->_DXLHandler.GetDxlState() == DXL_IDLE){
+				this->_ucMainState = MAIN_IDLE;
+			}
+			else{
+				this->_ucMainState = MAIN_INIT_ERR;
+			}
+			break;
 
-			if((ucInitCplt == true) && (this->_DXLHandler.GetDxlState() == DXL_IDLE)){
+
+		/* Main Idle ----------------------------------------------*/
+		case MAIN_IDLE:
+
+			/* USER CODE BEGIN Idle */
+
+
+			// Operation 종료 시, Flag 전부 초기화
+			if(this->_ucOperationFlag == OPERATION_END_FLAG){
+				this->_ucHomingFlag = FLAG_OFF;
+				this->_ucOperationFlag = FLAG_OFF;
+			}
+
+			// Homing Switch 클릭 시 --> Homing
+			if(this->_ucHomingFlag == HOMING_START_FLAG){
 				this->_ucMainState = MAIN_HOMING;
 			}
+
+			// Operating Switch 클릭 시 (Homing이 되어있다면) --> Operation / (Homing이 되어있지 않다면) --> Operation Flag 취소
+			if(this->_ucOperationFlag == OPERATION_START_FLAG){
+				if(this->_ucHomingFlag == HOMING_END_FLAG){
+					this->_ucMainState = MAIN_OPERATION;
+				}
+				else{
+					this->_ucOperationFlag = FLAG_OFF;
+				}
+			}
+
+
+			/* USER CODE END Idle */
+
 			break;
 
 
 		/* Main Homing --------------------------------------------*/
 		case MAIN_HOMING:
-			static bool ucHomingCplt = false;
-
 
 			/* USER CODE BEGIN Homing */
 
-			// EX Code
+
 			// PSensor 1 Homing --> DXL_1
 			switch(this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_1)){
 				case HOMING_START:
@@ -259,148 +275,150 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 
 			// 모든 Photo Sensor가 Homing이 완료된 경우 Complete
 			if((this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_1) == HOMING_CPLT) && (this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_2) == HOMING_CPLT)){
-				ucHomingCplt = true;
+				if(this->_DXLHandler.GetDxlState() == DXL_IDLE){
+					this->_ucHomingFlag = HOMING_END_FLAG;
+					this->_ucMainState = MAIN_IDLE;
+				}
+				else{
+					this->_ucMainState = MAIN_HOMING_ERR;
+				}
 			}
-
 
 			/* USER CODE END Homing */
 
-
-			if((ucHomingCplt == true) && (this->_DXLHandler.GetDxlState() == DXL_IDLE)){
-				this->_ucMainState = MAIN_IDLE;
-			}
-			break;
-
-
-		/* Main Idle ----------------------------------------------*/
-		case MAIN_IDLE:
-			static bool ucIdleCplt = false;
-
-
-			/* USER CODE BEGIN Idle */
-
-			// EX Code
-			if(bIsOPSwitchOn == true){
-				this->_ucMainState = MAIN_OPERATION;
-			}
-
-
-			/* USER CODE END Idle */
-
-			if((ucIdleCplt == true) && (this->_DXLHandler.GetDxlState() == DXL_IDLE)){
-				this->_ucMainState = MAIN_OPERATION;
-			}
 			break;
 
 
 		/* Main Operation -----------------------------------------*/
 		case MAIN_OPERATION:
-			static bool ucOperCplt = false;
-
 
 			/* USER CODE BEGIN Operation */
 
-			// EX Code
-			*pnOperPWM = PWM_MAX;
-			static int32_t pnOperParams[8] = {1, 1500, 2, 1500, 3, 1500, 4, 1500};
-			this->_DXLHandler.SyncWriteGoalPosition(DXL_CNT, pnOperParams);
-			static uint8_t ucCpltDxlCnt = 0;
-
-			while(1){
-				this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
-
-				ucCpltDxlCnt = 0;
-				for(size_t i=0; i<DXL_CNT; ++i){
-					if(this->_DXLHandler.GetDXLStatusPresentPosition(i+1) >= 1499){
-						ucCpltDxlCnt |= (1 << i);
-					}
-				}
-				if(ucCpltDxlCnt == 15){
-					break;
-				}
+			// 예시
+//			*pnOperPWM = PWM_MAX;
+//			static int32_t pnOperParams[8] = {1, 1500, 2, 1500, 3, 1500, 4, 1500};
+//			this->_DXLHandler.SyncWriteGoalPosition(DXL_CNT, pnOperParams);
+//			static uint8_t ucCpltDxlCnt = 0;
+//
+//			while(1){
+//				this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
+//
+//				ucCpltDxlCnt = 0;
+//				for(size_t i=0; i<DXL_CNT; ++i){
+//					if(this->_DXLHandler.GetDXLStatusPresentPosition(i+1) >= 1499){
+//						ucCpltDxlCnt |= (1 << i);
+//					}
+//				}
+//				if(ucCpltDxlCnt == 15){
+//					break;
+//				}
+//			}
+//
+//			static int32_t pnOperEndParams[8] = {1, 0, 2, 0, 3, 0, 4, 0};
+//			this->_DXLHandler.SyncWriteGoalPosition(DXL_CNT, pnOperEndParams);
+//
+//			while(1){
+//				this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
+//
+//				ucCpltDxlCnt = 0;
+//				for(size_t i=0; i<DXL_CNT; ++i){
+//					if(this->_DXLHandler.GetDXLStatusPresentPosition(i+1) <= 1){
+//						ucCpltDxlCnt |= (1 << i);
+//					}
+//				}
+//				if(ucCpltDxlCnt == 15){
+//					break;
+//				}
+//			}
+//
+//			*pnOperPWM = PWM_MIN;
+			if(this->_DXLHandler.GetDxlState() == DXL_IDLE){
+				this->_ucOperationFlag = OPERATION_END_FLAG;
+				this->_ucMainState = MAIN_IDLE;
+			}
+			else{
+				this->_ucMainState = MAIN_OPERATION_ERR;
 			}
 
-			static int32_t pnOperEndParams[8] = {1, 0, 2, 0, 3, 0, 4, 0};
-			this->_DXLHandler.SyncWriteGoalPosition(DXL_CNT, pnOperEndParams);
-
-			while(1){
-				this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
-
-				ucCpltDxlCnt = 0;
-				for(size_t i=0; i<DXL_CNT; ++i){
-					if(this->_DXLHandler.GetDXLStatusPresentPosition(i+1) <= 1){
-						ucCpltDxlCnt |= (1 << i);
-					}
-				}
-				if(ucCpltDxlCnt == 15){
-					break;
-				}
-			}
-
-			*pnOperPWM = PWM_MIN;
 			/* USER CODE END Operation */
 
-
-			if((ucOperCplt == true) && (this->_DXLHandler.GetDxlState() == DXL_IDLE)){
-				this->_ucMainState = MAIN_IDLE;
-			}
-			break;
-
-
-		/* Main Reset ---------------------------------------------*/
-		case MAIN_RESET:
-			static bool ucResetCplt = false;
-
-
-			/* USER CODE BEGIN Reset */
-
-			/* USER CODE END Reset */
-
-
-			if((ucResetCplt == true) && (this->_DXLHandler.GetDxlState() == DXL_IDLE)){
-				this->_ucMainState = MAIN_IDLE;
-			}
 			break;
 
 
 		/* Main Exit ----------------------------------------------*/
 		case MAIN_EXIT:
-			static bool ucExitCplt = false;
 
 			/* USER CODE BEGIN Exit */
 
-			// EX Code
 			static int32_t pnExitParams[8] = {1, 0, 2, 0, 3, 0, 4, 0};
 			this->_DXLHandler.SyncWriteLED(DXL_CNT, pnExitParams);
 			this->_DXLHandler.SyncWriteTorqueEnable(DXL_CNT, pnExitParams);
 
 
-			ucExitCplt = true;
-
 			/* USER CODE END Exit */
 
-
-			if((ucExitCplt == true) && (this->_DXLHandler.GetDxlState() == DXL_IDLE)){
-				this->DXLClear();
-				this->PSensorClear();
-				this->_ucMainState = MAIN_OFF;
-			}
+			this->DXLClear();
+			this->PSensorClear();
+			this->_ucSystemFlag = FLAG_OFF;
+			this->_ucHomingFlag = FLAG_OFF;
+			this->_ucOperationFlag = FLAG_OFF;
+			this->_ucMainState = MAIN_OFF;
 			break;
 
 		/* Error State --------------------------------------------*/
-//		case MAIN_INIT_ERR:
-//			break;
-//
-//		case MAIN_HOMING_ERR:
-//			break;
-//
-//		case MAIN_IDLE_ERR:
-//			break;
-//
-//		case MAIN_OPERATION_ERR:
-//			break;
-//
-//		case MAIN_RESET_ERR:
-//			break;
+		case MAIN_INIT_ERR:
+			break;
+
+		case MAIN_HOMING_ERR:
+			break;
+
+		case MAIN_IDLE_ERR:
+			break;
+
+		case MAIN_OPERATION_ERR:
+			break;
+
+		case MAIN_EXIT_ERR:
+			break;
+	}
+
+	// Power Switch가 꺼지면, 프로세스를 중단
+	if(this->_ucSystemFlag == SYSTEM_END_FLAG){
+		if(this->_ucMainState != MAIN_OFF){
+			this->_ucMainState = MAIN_EXIT;
+		}
 	}
 }
+
+void TaskHandler::GPIOInput(){
+	/* POWER_SW Interface ----------------------------------------------------------------*/
+	bool bIsPowerSWOn = HAL_GPIO_ReadPin(POWER_SW_GPIO_Port, POWER_SW_Pin) ? false : true;
+	if(bIsPowerSWOn == true){
+		this->_ucSystemFlag = SYSTEM_START_FLAG;
+	}
+	else{
+		this->_ucSystemFlag = SYSTEM_END_FLAG;
+	}
+
+	/* HOMING_SW Interface ---------------------------------------------------------------*/
+	bool bIsHomingSWOn = HAL_GPIO_ReadPin(PULL_UP_IN1_GPIO_Port, PULL_UP_IN1_Pin) ? false : true;
+	if(bIsHomingSWOn == true){
+		this->_ucHomingFlag = HOMING_START_FLAG;
+	}
+
+
+	/* OPERATING_SW Interface -------------------------------------------------------------*/
+	bool bIsOperatingSWOn = HAL_GPIO_ReadPin(PULL_UP_IN2_GPIO_Port, PULL_UP_IN2_Pin) ? false : true;
+	if(bIsOperatingSWOn == true){
+		this->_ucOperationFlag = OPERATION_START_FLAG;
+	}
+
+
+	/* PHOTO_SENSOR Interface ------------------------------------------------------------*/
+	uint8_t ucPSensorStatus1 = HAL_GPIO_ReadPin(PULL_UP_IN3_GPIO_Port, PULL_UP_IN3_Pin) ? SENSOR_NOT_DETECTED : SENSOR_DETECTED;
+	this->_PSensorHandler.SetPSensorStatusSensorFlag(PSENSOR_1, ucPSensorStatus1);
+
+	uint8_t ucPSensorStatus2 = HAL_GPIO_ReadPin(PULL_UP_IN4_GPIO_Port, PULL_UP_IN4_Pin) ? SENSOR_NOT_DETECTED : SENSOR_DETECTED;
+	this->_PSensorHandler.SetPSensorStatusSensorFlag(PSENSOR_2, ucPSensorStatus2);
+}
+
