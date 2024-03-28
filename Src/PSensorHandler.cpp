@@ -9,6 +9,8 @@
 
 #include <PSensorHandler.h>
 
+tPSensorStatus g_tDebugPSStatus[5];
+
 
 PSensorHandler::PSensorHandler(uint8_t ucTotalPSensorCnt) : _ucTotalPSensorCnt(ucTotalPSensorCnt){
 }
@@ -40,6 +42,10 @@ void PSensorHandler::SetPSensorStatusHomingState(uint8_t ucID, uint8_t ucHomingS
 void PSensorHandler::SetPSensorMapInit(uint8_t* pucIdList){
 	for(size_t i=0; i<this->_ucTotalPSensorCnt; ++i){
 		this->_mPSensorStatusList[pucIdList[i]] = new tPSensorStatus;
+
+		// Debuging 코드 ---------------------------------------
+		g_tDebugPSStatus[pucIdList[i]] = *(this->_mPSensorStatusList[pucIdList[i]]);
+		// Debuging 코드 ---------------------------------------
 	}
 }
 

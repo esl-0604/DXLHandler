@@ -33,6 +33,7 @@
 #define OPERATION_START_FLAG		0x05U
 #define OPERATION_END_FLAG			0x06U
 
+
 // DXL Interface
 #define DXL_CNT			4
 #define DXL_1				1
@@ -40,11 +41,11 @@
 #define DXL_3				3
 #define DXL_4				4
 
-#define HOMING_FAST_FAR_SPEED				-200
-#define HOMING_FAST_CLOSE_SPEED			200
-#define HOMING_SLOW_FAR_SPEED				-10
-#define HOMING_SLOW_CLOSE_SPEED			10
-#define DXL_STOP										0
+#define HOMING_FAST_FAR_VELOCITY				-200
+#define HOMING_FAST_CLOSE_VELOCITY			200
+#define HOMING_SLOW_FAR_VELOCITY				-10
+#define HOMING_SLOW_CLOSE_VELOCITY			10
+#define DXL_STOP_VELOCITY								0
 
 
 // Photo Sensor Interface
@@ -103,8 +104,9 @@ class TaskHandler {
 
 
 		// Main Process Interface -----------------------------------------------------------
-		void MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnOperPWM);
+		void MainProcess();
 		void GPIOInput();
+		void GPIOOutput(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnHomingPWM, volatile uint32_t* pnOperPWM);
 
 };
 

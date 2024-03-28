@@ -68,7 +68,7 @@ void TaskHandler::PSensorClear(){
 
 
 // Main Process Interface ----------------------------------------------------------------------------------
-void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnOperPWM){
+void TaskHandler::MainProcess(){
 	switch(this->_ucMainState){
 		/* Main Off -----------------------------------------------*/
 		case MAIN_OFF:
@@ -164,109 +164,73 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 			// PSensor 1 Homing --> DXL_1
 			switch(this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_1)){
 				case HOMING_START:
+					this->_DXLHandler.WriteTorqueEnableOFF(DXL_1);
+					this->_DXLHandler.WriteOperatingMode(DXL_1, 1);
+					this->_DXLHandler.WriteTorqueEnableON(DXL_1);
+
 					if(this->_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_1) == SENSOR_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_FAST_FAR_SPEED);
+						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_FAST_FAR_VELOCITY);
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_FAST_FAR);
 					}
 					else{
-						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_FAST_CLOSE_SPEED);
+						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_FAST_CLOSE_VELOCITY);
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_FAST_CLOSE);
 					}
+
+					this->_DXLHandler.ReadGoalVelocity(DXL_1);
 					break;
 
 				case HOMING_FAST_FAR:
 					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_1) == SENSOR_NOT_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_SLOW_CLOSE_SPEED);
+						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_SLOW_CLOSE_VELOCITY);
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_SLOW_CLOSE);
 					}
+
+					this->_DXLHandler.ReadGoalVelocity(DXL_1);
 					break;
 
 				case HOMING_FAST_CLOSE:
 					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_1) == SENSOR_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_SLOW_FAR_SPEED);
+						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_SLOW_FAR_VELOCITY);
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_SLOW_FAR);
 					}
+
+					this->_DXLHandler.ReadGoalVelocity(DXL_1);
 					break;
 
 				case HOMING_SLOW_FAR:
 					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_1) == SENSOR_NOT_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_SLOW_CLOSE_SPEED);
+						this->_DXLHandler.WriteGoalVelocity(DXL_1, HOMING_SLOW_CLOSE_VELOCITY);
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_SLOW_CLOSE);
 					}
+
+					this->_DXLHandler.ReadGoalVelocity(DXL_1);
 					break;
 
 				case HOMING_SLOW_CLOSE:
 					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_1) == SENSOR_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_1, DXL_STOP);
+						this->_DXLHandler.WriteGoalVelocity(DXL_1, DXL_STOP_VELOCITY);
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_OFFSET_SET);
 					}
+
+					this->_DXLHandler.ReadGoalVelocity(DXL_1);
 					break;
 
 				case HOMING_OFFSET_SET:
+					this->_DXLHandler.WriteTorqueEnableOFF(DXL_1);
+					this->_DXLHandler.WriteHomingOffset(DXL_1, 0);
+
 					this->_DXLHandler.ReadPresentPosition(DXL_1);
-					static int32_t nHomingOffsetValue = this->_DXLHandler.GetDXLStatusPresentPosition(DXL_1);
-					this->_DXLHandler.WriteHomingOffset(DXL_1, nHomingOffsetValue);
+					this->_DXLHandler.WriteHomingOffset(DXL_1, (-1) * this->_DXLHandler.GetDXLStatusPresentPosition(DXL_1));
+					this->_DXLHandler.ReadHomingOffset(DXL_1);
 					this->_DXLHandler.ReadPresentPosition(DXL_1);
-					static int32_t nPresentPosition = this->_DXLHandler.GetDXLStatusPresentPosition(DXL_1);
-					if(nPresentPosition == 0){
+
+					if(this->_DXLHandler.GetDXLStatusPresentPosition(DXL_1) <= 1){
 						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_1, HOMING_CPLT);
 					}
-					break;
 
-				case HOMING_CPLT:
-					break;
-			}
-
-			// PSensor 2 Homing --> DXL_3
-			switch(this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_2)){
-				case HOMING_START:
-					if(this->_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_2) == SENSOR_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_3, HOMING_FAST_FAR_SPEED);
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_FAST_FAR);
-					}
-					else{
-						this->_DXLHandler.WriteGoalVelocity(DXL_3, HOMING_FAST_CLOSE_SPEED);
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_FAST_CLOSE);
-					}
-					break;
-
-				case HOMING_FAST_FAR:
-					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_2) == SENSOR_NOT_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_3, HOMING_SLOW_CLOSE_SPEED);
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_SLOW_CLOSE);
-					}
-					break;
-
-				case HOMING_FAST_CLOSE:
-					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_2) == SENSOR_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_3, HOMING_SLOW_FAR_SPEED);
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_SLOW_FAR);
-					}
-					break;
-
-				case HOMING_SLOW_FAR:
-					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_2) == SENSOR_NOT_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_3, HOMING_SLOW_CLOSE_SPEED);
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_SLOW_CLOSE);
-					}
-					break;
-
-				case HOMING_SLOW_CLOSE:
-					if(_PSensorHandler.GetPSensorStatusSensorFlag(PSENSOR_2) == SENSOR_DETECTED){
-						this->_DXLHandler.WriteGoalVelocity(DXL_3, DXL_STOP);
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_OFFSET_SET);
-					}
-					break;
-
-				case HOMING_OFFSET_SET:
-					this->_DXLHandler.ReadPresentPosition(DXL_3);
-					static int32_t nHomingOffsetValue = this->_DXLHandler.GetDXLStatusPresentPosition(DXL_3);
-					this->_DXLHandler.WriteHomingOffset(DXL_3, nHomingOffsetValue);
-					this->_DXLHandler.ReadPresentPosition(DXL_3);
-					static int32_t nPresentPosition = this->_DXLHandler.GetDXLStatusPresentPosition(DXL_3);
-					if(nPresentPosition == 0){
-						this->_PSensorHandler.SetPSensorStatusHomingState(PSENSOR_2, HOMING_CPLT);
-					}
+					this->_DXLHandler.WriteOperatingMode(DXL_1, 3);
+					this->_DXLHandler.WriteTorqueEnableON(DXL_1);
 					break;
 
 				case HOMING_CPLT:
@@ -274,7 +238,7 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 			}
 
 			// 모든 Photo Sensor가 Homing이 완료된 경우 Complete
-			if((this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_1) == HOMING_CPLT) && (this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_2) == HOMING_CPLT)){
+			if((this->_PSensorHandler.GetPSensorStatusHomingState(PSENSOR_1) == HOMING_CPLT)){
 				if(this->_DXLHandler.GetDxlState() == DXL_IDLE){
 					this->_ucHomingFlag = HOMING_END_FLAG;
 					this->_ucMainState = MAIN_IDLE;
@@ -294,44 +258,9 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 
 			/* USER CODE BEGIN Operation */
 
-			// 예시
-//			*pnOperPWM = PWM_MAX;
-//			static int32_t pnOperParams[8] = {1, 1500, 2, 1500, 3, 1500, 4, 1500};
-//			this->_DXLHandler.SyncWriteGoalPosition(DXL_CNT, pnOperParams);
-//			static uint8_t ucCpltDxlCnt = 0;
-//
-//			while(1){
-//				this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
-//
-//				ucCpltDxlCnt = 0;
-//				for(size_t i=0; i<DXL_CNT; ++i){
-//					if(this->_DXLHandler.GetDXLStatusPresentPosition(i+1) >= 1499){
-//						ucCpltDxlCnt |= (1 << i);
-//					}
-//				}
-//				if(ucCpltDxlCnt == 15){
-//					break;
-//				}
-//			}
-//
-//			static int32_t pnOperEndParams[8] = {1, 0, 2, 0, 3, 0, 4, 0};
-//			this->_DXLHandler.SyncWriteGoalPosition(DXL_CNT, pnOperEndParams);
-//
-//			while(1){
-//				this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
-//
-//				ucCpltDxlCnt = 0;
-//				for(size_t i=0; i<DXL_CNT; ++i){
-//					if(this->_DXLHandler.GetDXLStatusPresentPosition(i+1) <= 1){
-//						ucCpltDxlCnt |= (1 << i);
-//					}
-//				}
-//				if(ucCpltDxlCnt == 15){
-//					break;
-//				}
-//			}
-//
-//			*pnOperPWM = PWM_MIN;
+			// 예시 - 원하는 동작을 switch문으로 구분하여 작성한다...
+
+
 			if(this->_DXLHandler.GetDxlState() == DXL_IDLE){
 				this->_ucOperationFlag = OPERATION_END_FLAG;
 				this->_ucMainState = MAIN_IDLE;
@@ -391,7 +320,7 @@ void TaskHandler::MainProcess(volatile uint32_t* pnPowerPWM, volatile uint32_t* 
 }
 
 void TaskHandler::GPIOInput(){
-	/* POWER_SW Interface ----------------------------------------------------------------*/
+	// POWER_SW Interface ----------------------------------------------------------------
 	bool bIsPowerSWOn = HAL_GPIO_ReadPin(POWER_SW_GPIO_Port, POWER_SW_Pin) ? false : true;
 	if(bIsPowerSWOn == true){
 		this->_ucSystemFlag = SYSTEM_START_FLAG;
@@ -400,25 +329,54 @@ void TaskHandler::GPIOInput(){
 		this->_ucSystemFlag = SYSTEM_END_FLAG;
 	}
 
-	/* HOMING_SW Interface ---------------------------------------------------------------*/
+	// HOMING_SW Interface ---------------------------------------------------------------
 	bool bIsHomingSWOn = HAL_GPIO_ReadPin(PULL_UP_IN1_GPIO_Port, PULL_UP_IN1_Pin) ? false : true;
 	if(bIsHomingSWOn == true){
 		this->_ucHomingFlag = HOMING_START_FLAG;
 	}
 
 
-	/* OPERATING_SW Interface -------------------------------------------------------------*/
-	bool bIsOperatingSWOn = HAL_GPIO_ReadPin(PULL_UP_IN2_GPIO_Port, PULL_UP_IN2_Pin) ? false : true;
+	// OPERATING_SW Interface ------------------------------------------------------------
+	bool bIsOperatingSWOn = HAL_GPIO_ReadPin(PULL_UP_IN3_GPIO_Port, PULL_UP_IN3_Pin) ? false : true;
 	if(bIsOperatingSWOn == true){
 		this->_ucOperationFlag = OPERATION_START_FLAG;
 	}
 
 
-	/* PHOTO_SENSOR Interface ------------------------------------------------------------*/
-	uint8_t ucPSensorStatus1 = HAL_GPIO_ReadPin(PULL_UP_IN3_GPIO_Port, PULL_UP_IN3_Pin) ? SENSOR_NOT_DETECTED : SENSOR_DETECTED;
+	// PHOTO_SENSOR Interface ------------------------------------------------------------
+	uint8_t ucPSensorStatus1 = HAL_GPIO_ReadPin(PULL_UP_IN5_GPIO_Port, PULL_UP_IN5_Pin) ? SENSOR_DETECTED : SENSOR_NOT_DETECTED;
 	this->_PSensorHandler.SetPSensorStatusSensorFlag(PSENSOR_1, ucPSensorStatus1);
 
-	uint8_t ucPSensorStatus2 = HAL_GPIO_ReadPin(PULL_UP_IN4_GPIO_Port, PULL_UP_IN4_Pin) ? SENSOR_NOT_DETECTED : SENSOR_DETECTED;
+	uint8_t ucPSensorStatus2 = HAL_GPIO_ReadPin(PULL_UP_IN7_GPIO_Port, PULL_UP_IN7_Pin) ? SENSOR_DETECTED : SENSOR_NOT_DETECTED;
 	this->_PSensorHandler.SetPSensorStatusSensorFlag(PSENSOR_2, ucPSensorStatus2);
 }
+
+void TaskHandler::GPIOOutput(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnHomingPWM, volatile uint32_t* pnOperPWM){
+	// POWER_SW Interface ----------------------------------------------------------------
+	if(this->_ucSystemFlag == SYSTEM_START_FLAG){
+		*pnPowerPWM = PWM_MAX;
+	}
+	else{
+		*pnPowerPWM = PWM_MIN;
+		*pnHomingPWM = PWM_MIN;
+		*pnOperPWM = PWM_MIN;
+	}
+
+	// HOMING_SW Interface ---------------------------------------------------------------
+	if(this->_ucHomingFlag == HOMING_START_FLAG){
+		*pnHomingPWM = PWM_MAX;
+	}
+	else{
+		*pnHomingPWM = PWM_MIN;
+	}
+
+	// OPERATING_SW Interface ------------------------------------------------------------
+	if(this->_ucOperationFlag == OPERATION_START_FLAG){
+		*pnOperPWM = PWM_MAX;
+	}
+	else{
+		*pnOperPWM = PWM_MIN;
+	}
+}
+
 
