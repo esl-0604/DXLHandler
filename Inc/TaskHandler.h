@@ -47,6 +47,8 @@
 #define HOMING_SLOW_CLOSE_VELOCITY			10
 #define DXL_STOP_VELOCITY								0
 
+#define DXL_POSITION_OFFSET				1
+
 
 // Photo Sensor Interface
 #define PSENSOR_CNT		2
@@ -96,11 +98,16 @@ class TaskHandler {
 		void RecieveCplt(uint16_t usPacketSize);
 
 
-		// Child Handler Interface ----------------------------------------------------------
+		// DXL Handler Interface ------------------------------------------------------------
 		void DXLInit();
 		void DXLClear();
+		void DXLWriteAndRead();
+
+
+		// PSensor Handler Interface --------------------------------------------------------
 		void PSensorInit();
 		void PSensorClear();
+		void PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID);
 
 
 		// Main Process Interface -----------------------------------------------------------

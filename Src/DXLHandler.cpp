@@ -86,6 +86,16 @@ int32_t DXLHandler::GetDXLStatusPresentPosition(uint8_t ucID){
 
 
 // DXL Handler Interface -----------------------------------------------------------------------------------
+void DXLHandler::SetDXLInit(){
+	this->_ucDxlState = DXL_IDLE;
+	this->_ucParsingType = NO_INST;
+	this->_ucTxIdCnt = 0;
+	this->_ucRxIdCnt = 0;
+	this->_UARTHandler.SetRxBufferClear();
+	this->_UARTHandler.SetRecieveMode();
+	this->_DXLProtocol.SetClear();
+}
+
 void DXLHandler::SetDXLMapInit(uint8_t* pucIdList){
 	for(size_t i=0; i<this->_ucTotalDXLCnt; ++i){
 		this->_mDXLStatusList[pucIdList[i]] = new tDXLStatus;

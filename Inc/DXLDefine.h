@@ -118,7 +118,7 @@
 #define DXL_SHIFT_8_BIT				8
 
 // System Interface
-#define DXL_TIMEOUT								10
+#define DXL_TIMEOUT								100
 #define DXL_ENABLE								1
 #define DXL_DISABLE								0
 /* DXL Handler --------------------------------------------------------------------------- */

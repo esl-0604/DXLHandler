@@ -94,6 +94,9 @@ void DXLProtocol::SetClear(){
 	this->_ucParamsLength = 0;
 	this->_ucID = 0;
 	this->_ucInstruction = 0;
+	this->_ucError = 0;
+	this->_bIsCRCValidate = false;
+	this->_bIsByteStuffing = false;
 	delete[] this->_pucHeader; this->_pucHeader = nullptr;
 	delete[] this->_pucLength; this->_pucLength = nullptr;
 	delete[] this->_pucParams; this->_pucParams = nullptr;

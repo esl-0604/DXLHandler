@@ -88,6 +88,7 @@ class DXLHandler {
 
 
 		// DXL Handler Interface --------------------------------------------------
+		void SetDXLInit();
 		void SetDXLMapInit(uint8_t* pucIdList);
 		void SetDXLMapClear();
 		void SetDxlState(uint8_t ucDxlState);
