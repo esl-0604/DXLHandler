@@ -73,6 +73,8 @@ class DXLHandler {
 		// DXL Status Interface ---------------------------------------------------
 		uint8_t GetDXLStatusOperatingMode				(uint8_t ucID);
 		int32_t GetDXLStatusHomingOffset				(uint8_t ucID);
+		int32_t GetDXLStatusCurrentLimit				(uint8_t ucID);
+		int32_t GetDXLStatusVelocityLimit				(uint8_t ucID);
 		int32_t GetDXLStatusMaxPositionLimit		(uint8_t ucID);
 		int32_t GetDXLStatusMinPositionLimit		(uint8_t ucID);
 		uint8_t	GetDXLStatusTorqueEnable				(uint8_t ucID);
@@ -135,8 +137,8 @@ class DXLHandler {
 		void WriteVelocityLimit					(uint8_t ucID, int32_t nVelocityLimit);
 		void WriteMaxPositionLimit			(uint8_t ucID, int32_t nMaxPositionLimit);
 		void WriteMinPositionLimit			(uint8_t ucID, int32_t nMinPositionLimit);
-		void WriteTorqueEnableON				(uint8_t ucID);
-		void WriteTorqueEnableOFF				(uint8_t ucID);
+		void WriteTorqueEnableOn				(uint8_t ucID);
+		void WriteTorqueEnableOff				(uint8_t ucID);
 		void WriteLEDOn									(uint8_t ucID);
 		void WriteLEDOff								(uint8_t ucID);
 		void WriteStatusReturnLevel			(uint8_t ucID, int32_t nStatusReturnLevel);
@@ -155,6 +157,8 @@ class DXLHandler {
 		void SyncReadTorqueEnable				(uint8_t ucIdNum, uint8_t* pucIdList);
 		void SyncReadLED								(uint8_t ucIdNum, uint8_t* pucIdList);
 		void SyncReadStatusReturnLevel	(uint8_t ucIdNum, uint8_t* pucIdList);
+		void SyncReadGoalCurrent				(uint8_t ucIdNum, uint8_t* pucIdList);
+		void SyncReadGoalVelocity				(uint8_t ucIdNum, uint8_t* pucIdList);
 		void SyncReadGoalPosition				(uint8_t ucIdNum, uint8_t* pucIdList);
 		void SyncReadMoving							(uint8_t ucIdNum, uint8_t* pucIdList);
 		void SyncReadPresentCurrent			(uint8_t ucIdNum, uint8_t* pucIdList);
@@ -175,6 +179,38 @@ class DXLHandler {
 		void SyncWriteGoalCurrent				(uint8_t ucIdNum, int32_t* pnTargetParams);
 		void SyncWriteGoalVelocity			(uint8_t ucIdNum, int32_t* pnTargetParams);
 		void SyncWriteGoalPosition			(uint8_t ucIdNum, int32_t* pnTargetParams);
+
+
+		// DXL Write_Read Call ----------------------------------------------------
+		uint8_t WriteReadOperatingMode			(uint8_t ucID, int32_t nOperatingMode);
+		uint8_t WriteReadHomingOffset				(uint8_t ucID, int32_t nHomingOffset);
+		uint8_t WriteReadCurrentLimit				(uint8_t ucID, int32_t nCurrentLimit);
+		uint8_t WriteReadVelocityLimit			(uint8_t ucID, int32_t nVelocityLimit);
+		uint8_t WriteReadMaxPositionLimit		(uint8_t ucID, int32_t nMaxPositionLimit);
+		uint8_t WriteReadMinPositionLimit		(uint8_t ucID, int32_t nMinPositionLimit);
+		uint8_t WriteReadTorqueEnableOn			(uint8_t ucID);
+		uint8_t WriteReadTorqueEnableOff		(uint8_t ucID);
+		uint8_t WriteReadLEDOn							(uint8_t ucID);
+		uint8_t WriteReadLEDOff							(uint8_t ucID);
+		uint8_t WriteReadStatusReturnLevel	(uint8_t ucID, int32_t nStatusReturnLevel);
+		uint8_t WriteReadGoalCurrent				(uint8_t ucID, int32_t nGoalCurrent);
+		uint8_t WriteReadGoalVelocity				(uint8_t ucID, int32_t nGoalVelocity);
+		uint8_t WriteReadGoalPosition				(uint8_t ucID, int32_t nGoalPosition);
+
+
+		// DXL Sync Write_Read Call ------------------------------------------------
+		uint8_t SyncWriteReadOperatingMode			(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadHomingOffset				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadCurrentLimit				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadVelocityLimit			(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadMaxPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadMinPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadTorqueEnable				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadLED								(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadStatusReturnLevel	(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadGoalCurrent				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadGoalVelocity				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadGoalPosition				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
 };
 
 

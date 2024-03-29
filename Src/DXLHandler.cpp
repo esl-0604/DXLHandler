@@ -36,6 +36,14 @@ int32_t DXLHandler::GetDXLStatusHomingOffset(uint8_t ucID){
 	return(this->_mDXLStatusList[ucID]->nHomingOffset);
 }
 
+int32_t DXLHandler::GetDXLStatusCurrentLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nCurrentLimit);
+}
+
+int32_t DXLHandler::GetDXLStatusVelocityLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nVelocityLimit);
+}
+
 int32_t DXLHandler::GetDXLStatusMaxPositionLimit(uint8_t ucID){
 	return(this->_mDXLStatusList[ucID]->nMaxPositionLimit);
 }
@@ -470,13 +478,13 @@ void DXLHandler::WriteMinPositionLimit(uint8_t ucID, int32_t nMinPositionLimit){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, nMinPositionLimit, MIN_POSITION_LIMIT_ADDR, DXL_DATA_4_BYTE) );
 }
 
-void DXLHandler::WriteTorqueEnableON(uint8_t ucID){
+void DXLHandler::WriteTorqueEnableOn(uint8_t ucID){
 	this->_ucParsingType = P_WRITE;
 	this->_ucTxIdCnt = 1;
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, DXL_ENABLE, TORQUE_ENABLE_ADDR, DXL_DATA_1_BYTE) );
 }
 
-void DXLHandler::WriteTorqueEnableOFF(uint8_t ucID){
+void DXLHandler::WriteTorqueEnableOff(uint8_t ucID){
 	this->_ucParsingType = P_WRITE;
 	this->_ucTxIdCnt = 1;
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxWritePacket(ucID, DXL_DISABLE, TORQUE_ENABLE_ADDR, DXL_DATA_1_BYTE) );
@@ -574,6 +582,18 @@ void DXLHandler::SyncReadStatusReturnLevel(uint8_t ucIdNum, uint8_t* pucIdList){
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, STATUS_RETURN_LEVEL_ADDR, DXL_DATA_1_BYTE) );
 }
 
+void DXLHandler::SyncReadGoalCurrent(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_GOAL_CURRENT;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, GOAL_CURRENT_ADDR, DXL_DATA_2_BYTE) );
+}
+
+void DXLHandler::SyncReadGoalVelocity(uint8_t ucIdNum, uint8_t* pucIdList){
+	this->_ucParsingType = P_GOAL_VELOCITY;
+	this->_ucTxIdCnt = ucIdNum;
+	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncReadPacket(ucIdNum, pucIdList, GOAL_VELOCITY_ADDR, DXL_DATA_4_BYTE) );
+}
+
 void DXLHandler::SyncReadGoalPosition(uint8_t ucIdNum, uint8_t* pucIdList){
 	this->_ucParsingType = P_GOAL_POSITION;
 	this->_ucTxIdCnt = ucIdNum;
@@ -666,3 +686,376 @@ void DXLHandler::SyncWriteGoalPosition(uint8_t ucIdNum, int32_t* pnTargetParams)
 	this->TransmitAndWaitUntilCplt( this->_DXLProtocol.GetTxSyncWritePacket(ucIdNum, pnTargetParams, GOAL_POSITION_ADDR, DXL_DATA_4_BYTE) );
 }
 
+
+// DXL Write_Read Call -------------------------------------------------------------------------------------
+uint8_t DXLHandler::WriteReadOperatingMode(uint8_t ucID, int32_t nOperatingMode){
+	this->WriteOperatingMode(ucID, nOperatingMode);
+	this->ReadOperatingMode(ucID);
+	int32_t nReadValue = this->GetDXLStatusOperatingMode(ucID);
+
+	if(nReadValue == nOperatingMode){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadHomingOffset(uint8_t ucID, int32_t nHomingOffset){
+	this->WriteHomingOffset(ucID, nHomingOffset);
+	this->ReadHomingOffset(ucID);
+	int32_t nReadValue = this->GetDXLStatusHomingOffset(ucID);
+
+	if(nReadValue == nHomingOffset){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadCurrentLimit(uint8_t ucID, int32_t nCurrentLimit){
+	this->WriteCurrentLimit(ucID, nCurrentLimit);
+	this->ReadCurrentLimit(ucID);
+	int32_t nReadValue = this->GetDXLStatusCurrentLimit(ucID);
+
+	if(nReadValue == nCurrentLimit){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadVelocityLimit(uint8_t ucID, int32_t nVelocityLimit){
+	this->WriteVelocityLimit(ucID, nVelocityLimit);
+	this->ReadVelocityLimit(ucID);
+	int32_t nReadValue = this->GetDXLStatusVelocityLimit(ucID);
+
+	if(nReadValue == nVelocityLimit){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadMaxPositionLimit(uint8_t ucID, int32_t nMaxPositionLimit){
+	this->WriteMaxPositionLimit(ucID, nMaxPositionLimit);
+	this->ReadMaxPositionLimit(ucID);
+	int32_t nReadValue = this->GetDXLStatusMaxPositionLimit(ucID);
+
+	if(nReadValue == nMaxPositionLimit){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadMinPositionLimit(uint8_t ucID, int32_t nMinPositionLimit){
+	this->WriteMinPositionLimit(ucID, nMinPositionLimit);
+	this->ReadMinPositionLimit(ucID);
+	int32_t nReadValue = this->GetDXLStatusMinPositionLimit(ucID);
+
+	if(nReadValue == nMinPositionLimit){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadTorqueEnableOn(uint8_t ucID){
+	this->WriteTorqueEnableOn(ucID);
+	this->ReadTorqueEnable(ucID);
+	int32_t nReadValue = this->GetDXLStatusTorqueEnable(ucID);
+
+	if(nReadValue == DXL_ENABLE){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadTorqueEnableOff(uint8_t ucID){
+	this->WriteTorqueEnableOff(ucID);
+	this->ReadTorqueEnable(ucID);
+	int32_t nReadValue = this->GetDXLStatusTorqueEnable(ucID);
+
+	if(nReadValue == DXL_DISABLE){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadLEDOn(uint8_t ucID){
+	this->WriteLEDOn(ucID);
+	this->ReadLED(ucID);
+	int32_t nReadValue = this->GetDXLStatusLED(ucID);
+
+	if(nReadValue == DXL_ENABLE){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadLEDOff(uint8_t ucID){
+	this->WriteLEDOff(ucID);
+	this->ReadLED(ucID);
+	int32_t nReadValue = this->GetDXLStatusLED(ucID);
+
+	if(nReadValue == DXL_DISABLE){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadStatusReturnLevel(uint8_t ucID, int32_t nStatusReturnLevel){
+	this->WriteStatusReturnLevel(ucID, nStatusReturnLevel);
+	this->ReadStatusReturnLevel(ucID);
+	int32_t nReadValue = this->GetDXLStatusStatusReturnLevel(ucID);
+
+	if(nReadValue == nStatusReturnLevel){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadGoalCurrent(uint8_t ucID, int32_t nGoalCurrent){
+	this->WriteGoalCurrent(ucID, nGoalCurrent);
+	this->ReadGoalCurrent(ucID);
+	int32_t nReadValue = this->GetDXLStatusGoalCurrent(ucID);
+
+	if(nReadValue == nGoalCurrent){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadGoalVelocity(uint8_t ucID, int32_t nGoalVelocity){
+	this->WriteGoalVelocity(ucID, nGoalVelocity);
+	this->ReadGoalVelocity(ucID);
+	int32_t nReadValue = this->GetDXLStatusGoalVelocity(ucID);
+
+	if(nReadValue == nGoalVelocity){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::WriteReadGoalPosition(uint8_t ucID, int32_t nGoalPosition){
+	this->WriteGoalPosition(ucID, nGoalPosition);
+	this->ReadGoalPosition(ucID);
+	int32_t nReadValue = this->GetDXLStatusGoalPosition(ucID);
+
+	if(nReadValue == nGoalPosition){
+		return 1;
+	}
+	return 0;
+}
+
+
+// DXL Sync Write_Read Call --------------------------------------------------------------------------------
+uint8_t DXLHandler::SyncWriteReadOperatingMode(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteOperatingMode(ucIdNum, pnTargetParams);
+	this->SyncReadOperatingMode(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusOperatingMode(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadHomingOffset(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteHomingOffset(ucIdNum, pnTargetParams);
+	this->SyncReadHomingOffset(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusHomingOffset(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadCurrentLimit(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteCurrentLimit(ucIdNum, pnTargetParams);
+	this->SyncReadCurrentLimit(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusCurrentLimit(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadVelocityLimit(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteVelocityLimit(ucIdNum, pnTargetParams);
+	this->SyncReadVelocityLimit(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusVelocityLimit(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadMaxPositionLimit(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteMaxPositionLimit(ucIdNum, pnTargetParams);
+	this->SyncReadMaxPositionLimit(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusMaxPositionLimit(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadMinPositionLimit(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteMinPositionLimit(ucIdNum, pnTargetParams);
+	this->SyncReadMinPositionLimit(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusMinPositionLimit(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadTorqueEnable(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteTorqueEnable(ucIdNum, pnTargetParams);
+	this->SyncReadTorqueEnable(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusTorqueEnable(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadLED(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteLED(ucIdNum, pnTargetParams);
+	this->SyncReadLED(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusLED(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadStatusReturnLevel(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteStatusReturnLevel(ucIdNum, pnTargetParams);
+	this->SyncReadStatusReturnLevel(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusStatusReturnLevel(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadGoalCurrent(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteGoalCurrent(ucIdNum, pnTargetParams);
+	this->SyncReadGoalCurrent(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusGoalCurrent(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadGoalVelocity(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteGoalVelocity(ucIdNum, pnTargetParams);
+	this->SyncReadGoalVelocity(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusGoalVelocity(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t DXLHandler::SyncWriteReadGoalPosition(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams){
+	this->SyncWriteGoalPosition(ucIdNum, pnTargetParams);
+	this->SyncReadGoalPosition(ucIdNum, pucIdList);
+
+	uint8_t ucCheckIdCnt = 0;
+	for(size_t i=0; i<ucIdNum; ++i){
+		int32_t nReadValue = this->GetDXLStatusGoalPosition(pucIdList[i]);
+		if(nReadValue == pnTargetParams[2*i + 1]){
+			ucCheckIdCnt++;
+		}
+	}
+
+	if(ucCheckIdCnt == ucIdNum){
+		return 1;
+	}
+	return 0;
+}

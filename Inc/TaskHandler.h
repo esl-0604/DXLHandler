@@ -23,6 +23,12 @@
 #define MAIN_EXIT											0x50U
 #define MAIN_EXIT_ERR									0x51U
 
+// Operation State
+#define OPERATION_START				0x00U
+#define OPERATION_BUSY				0x01U
+#define OPERATION_STOP				0x02U
+#define OPERATION_CPLT				0x03U
+
 
 // Flag State
 #define FLAG_OFF								0x00U
@@ -80,6 +86,7 @@ class TaskHandler {
 		uint8_t* _pucDXLIDList;							// DXL 전체 ID List
 		uint8_t* _pucPSencorIDList;					// PhotoSensor 전체 ID List
 		uint8_t _ucMainState;								// Main Process State
+		uint8_t _ucOperationState;					// Operation Process State
 
 		// Flag
 		uint8_t _ucSystemFlag;
@@ -101,20 +108,23 @@ class TaskHandler {
 		// DXL Handler Interface ------------------------------------------------------------
 		void DXLInit();
 		void DXLClear();
-		void DXLWriteAndRead();
+		void DXLWrite_Read_Check(uint8_t ucWriteReadCheckValue);
 
 
 		// PSensor Handler Interface --------------------------------------------------------
 		void PSensorInit();
 		void PSensorClear();
-		void PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID);
 
 
 		// Main Process Interface -----------------------------------------------------------
-		void MainProcess();
-		void GPIOInput();
-		void GPIOOutput(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnHomingPWM, volatile uint32_t* pnOperPWM);
+		void Main_Process();
+		void GPIO_Input();
+		void GPIO_PWM(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnHomingPWM, volatile uint32_t* pnOperPWM);
 
+
+		// Main Process Sub Interface -------------------------------------------------------
+		uint8_t PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID);
+		bool DXLOperation();
 };
 
 

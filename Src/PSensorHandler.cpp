@@ -37,6 +37,11 @@ void PSensorHandler::SetPSensorStatusHomingState(uint8_t ucID, uint8_t ucHomingS
 	this->_mPSensorStatusList[ucID]->ucPSensorHomingState = ucHomingState;
 }
 
+void PSensorHandler::SetPSensorStatusHomingStateReset(){
+	for(auto &iter : this->_mPSensorStatusList) {
+		this->SetPSensorStatusHomingState(iter.first, HOMING_START);
+	}
+}
 
 // PSensor Handler Interface ----------------------------------------------------------------------
 void PSensorHandler::SetPSensorMapInit(uint8_t* pucIdList){

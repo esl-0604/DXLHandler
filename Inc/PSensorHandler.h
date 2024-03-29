@@ -53,11 +53,12 @@ class PSensorHandler {
 		uint8_t GetPSensorStatusHomingState(uint8_t ucID);
 		void SetPSensorStatusSensorFlag(uint8_t ucID, uint8_t ucFlag);
 		void SetPSensorStatusHomingState(uint8_t ucID, uint8_t ucHomingState);
-
+		void SetPSensorStatusHomingStateReset();
 
 		// PSensor Handler Interface ---------------------------------------------------
 		void SetPSensorMapInit(uint8_t* pucIdList);
 		void SetPSensorMapClear();
+
 
 };
 
