@@ -108,7 +108,6 @@ class TaskHandler {
 		// DXL Handler Interface ------------------------------------------------------------
 		void DXLInit();
 		void DXLClear();
-		void DXLWrite_Read_Check(uint8_t ucWriteReadCheckValue);
 
 
 		// PSensor Handler Interface --------------------------------------------------------
@@ -124,7 +123,7 @@ class TaskHandler {
 
 		// Main Process Sub Interface -------------------------------------------------------
 		uint8_t PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID);
-		bool DXLOperation();
+		uint8_t DXLOperation();
 };
 
 

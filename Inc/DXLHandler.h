@@ -11,6 +11,8 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <functional>
 #include <main.h>
 #include <stdint.h>
 #include "Packet.h"
@@ -112,22 +114,22 @@ class DXLHandler {
 
 
 		// DXL Single Read Call ---------------------------------------------------
-		void ReadOperatingMode					(uint8_t ucID);
-		void ReadHomingOffset						(uint8_t ucID);
-		void ReadCurrentLimit						(uint8_t ucID);
-		void ReadVelocityLimit					(uint8_t ucID);
-		void ReadMaxPositionLimit				(uint8_t ucID);
-		void ReadMinPositionLimit				(uint8_t ucID);
-		void ReadTorqueEnable						(uint8_t ucID);
-		void ReadLED										(uint8_t ucID);
-		void ReadStatusReturnLevel			(uint8_t ucID);
-		void ReadGoalCurrent						(uint8_t ucID);
-		void ReadGoalVelocity						(uint8_t ucID);
-		void ReadGoalPosition						(uint8_t ucID);
-		void ReadMoving									(uint8_t ucID);
-		void ReadPresentCurrent					(uint8_t ucID);
-		void ReadPresentVelocity				(uint8_t ucID);
-		void ReadPresentPosition				(uint8_t ucID);
+		int32_t ReadOperatingMode				(uint8_t ucID);
+		int32_t ReadHomingOffset				(uint8_t ucID);
+		int32_t ReadCurrentLimit				(uint8_t ucID);
+		int32_t ReadVelocityLimit				(uint8_t ucID);
+		int32_t ReadMaxPositionLimit		(uint8_t ucID);
+		int32_t ReadMinPositionLimit		(uint8_t ucID);
+		int32_t ReadTorqueEnable				(uint8_t ucID);
+		int32_t ReadLED									(uint8_t ucID);
+		int32_t ReadStatusReturnLevel		(uint8_t ucID);
+		int32_t ReadGoalCurrent					(uint8_t ucID);
+		int32_t ReadGoalVelocity				(uint8_t ucID);
+		int32_t ReadGoalPosition				(uint8_t ucID);
+		int32_t ReadMoving							(uint8_t ucID);
+		int32_t ReadPresentCurrent			(uint8_t ucID);
+		int32_t ReadPresentVelocity			(uint8_t ucID);
+		int32_t ReadPresentPosition			(uint8_t ucID);
 
 
 		// DXL Single Write Call --------------------------------------------------
@@ -137,10 +139,8 @@ class DXLHandler {
 		void WriteVelocityLimit					(uint8_t ucID, int32_t nVelocityLimit);
 		void WriteMaxPositionLimit			(uint8_t ucID, int32_t nMaxPositionLimit);
 		void WriteMinPositionLimit			(uint8_t ucID, int32_t nMinPositionLimit);
-		void WriteTorqueEnableOn				(uint8_t ucID);
-		void WriteTorqueEnableOff				(uint8_t ucID);
-		void WriteLEDOn									(uint8_t ucID);
-		void WriteLEDOff								(uint8_t ucID);
+		void WriteTorqueEnable					(uint8_t ucID, int32_t nTorqueEnable);
+		void WriteLED										(uint8_t ucID, int32_t nLED);
 		void WriteStatusReturnLevel			(uint8_t ucID, int32_t nStatusReturnLevel);
 		void WriteGoalCurrent						(uint8_t ucID, int32_t nGoalCurrent);
 		void WriteGoalVelocity					(uint8_t ucID, int32_t nGoalVelocity);
@@ -148,22 +148,22 @@ class DXLHandler {
 
 
 		// DXL Sync Read Call -----------------------------------------------------
-		void SyncReadOperatingMode			(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadHomingOffset				(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadCurrentLimit				(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadVelocityLimit			(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadMaxPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadMinPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadTorqueEnable				(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadLED								(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadStatusReturnLevel	(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadGoalCurrent				(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadGoalVelocity				(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadGoalPosition				(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadMoving							(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadPresentCurrent			(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadPresentVelocity		(uint8_t ucIdNum, uint8_t* pucIdList);
-		void SyncReadPresentPosition		(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadOperatingMode				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadHomingOffset				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadCurrentLimit				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadVelocityLimit				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadMaxPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadMinPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadTorqueEnable				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadLED									(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadStatusReturnLevel		(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadGoalCurrent					(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadGoalVelocity				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadGoalPosition				(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadMoving							(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadPresentCurrent			(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadPresentVelocity			(uint8_t ucIdNum, uint8_t* pucIdList);
+		vector<int32_t> SyncReadPresentPosition			(uint8_t ucIdNum, uint8_t* pucIdList);
 
 
 		// DXL Sync Write Call ----------------------------------------------------
@@ -182,35 +182,41 @@ class DXLHandler {
 
 
 		// DXL Write_Read Call ----------------------------------------------------
-		uint8_t WriteReadOperatingMode			(uint8_t ucID, int32_t nOperatingMode);
-		uint8_t WriteReadHomingOffset				(uint8_t ucID, int32_t nHomingOffset);
-		uint8_t WriteReadCurrentLimit				(uint8_t ucID, int32_t nCurrentLimit);
-		uint8_t WriteReadVelocityLimit			(uint8_t ucID, int32_t nVelocityLimit);
-		uint8_t WriteReadMaxPositionLimit		(uint8_t ucID, int32_t nMaxPositionLimit);
-		uint8_t WriteReadMinPositionLimit		(uint8_t ucID, int32_t nMinPositionLimit);
-		uint8_t WriteReadTorqueEnableOn			(uint8_t ucID);
-		uint8_t WriteReadTorqueEnableOff		(uint8_t ucID);
-		uint8_t WriteReadLEDOn							(uint8_t ucID);
-		uint8_t WriteReadLEDOff							(uint8_t ucID);
-		uint8_t WriteReadStatusReturnLevel	(uint8_t ucID, int32_t nStatusReturnLevel);
-		uint8_t WriteReadGoalCurrent				(uint8_t ucID, int32_t nGoalCurrent);
-		uint8_t WriteReadGoalVelocity				(uint8_t ucID, int32_t nGoalVelocity);
-		uint8_t WriteReadGoalPosition				(uint8_t ucID, int32_t nGoalPosition);
+		uint8_t WriteReadOperatingMode			(uint8_t ucID, int32_t nOperatingMode, uint8_t ucRetry);
+		uint8_t WriteReadHomingOffset				(uint8_t ucID, int32_t nHomingOffset, uint8_t ucRetry);
+		uint8_t WriteReadCurrentLimit				(uint8_t ucID, int32_t nCurrentLimit, uint8_t ucRetry);
+		uint8_t WriteReadVelocityLimit			(uint8_t ucID, int32_t nVelocityLimit, uint8_t ucRetry);
+		uint8_t WriteReadMaxPositionLimit		(uint8_t ucID, int32_t nMaxPositionLimit, uint8_t ucRetry);
+		uint8_t WriteReadMinPositionLimit		(uint8_t ucID, int32_t nMinPositionLimit, uint8_t ucRetry);
+		uint8_t WriteReadTorqueEnable				(uint8_t ucID, int32_t nTorqueEnable, uint8_t ucRetry);
+		uint8_t WriteReadLED								(uint8_t ucID, int32_t nLED, uint8_t ucRetry);
+		uint8_t WriteReadStatusReturnLevel	(uint8_t ucID, int32_t nStatusReturnLevel, uint8_t ucRetry);
+		uint8_t WriteReadGoalCurrent				(uint8_t ucID, int32_t nGoalCurrent, uint8_t ucRetry);
+		uint8_t WriteReadGoalVelocity				(uint8_t ucID, int32_t nGoalVelocity, uint8_t ucRetry);
+		uint8_t WriteReadGoalPosition				(uint8_t ucID, int32_t nGoalPosition, uint8_t ucRetry);
 
 
 		// DXL Sync Write_Read Call ------------------------------------------------
-		uint8_t SyncWriteReadOperatingMode			(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadHomingOffset				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadCurrentLimit				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadVelocityLimit			(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadMaxPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadMinPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadTorqueEnable				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadLED								(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadStatusReturnLevel	(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadGoalCurrent				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadGoalVelocity				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
-		uint8_t SyncWriteReadGoalPosition				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams);
+		uint8_t SyncWriteReadOperatingMode			(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadHomingOffset				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadCurrentLimit				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadVelocityLimit			(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadMaxPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadMinPositionLimit		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadTorqueEnable				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadLED								(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadStatusReturnLevel	(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadGoalCurrent				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadGoalVelocity				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+		uint8_t SyncWriteReadGoalPosition				(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry);
+
+
+		// DXL Call Templete --------------------------------------------------------
+		template<typename WriteFunction, typename ReadFunction>
+		uint8_t WriteReadTemplete				(uint8_t ucID, int32_t nTargetParams, uint8_t ucRetry, WriteFunction WriteFunc, ReadFunction ReadFunc);
+
+		template<typename SyncWriteFunction, typename SyncReadFunction>
+		uint8_t SyncWriteReadTemplete		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry, SyncWriteFunction SyncWriteFunc, SyncReadFunction SyncReadFunc);
 };
 
 

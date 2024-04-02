@@ -15,6 +15,7 @@
 /* DXL E-Manual -------------------------------------------------------------------------- */
 
 // DXL Instruction
+#define NO_INST										0x00U
 #define PING											0x01U
 #define READ											0x02U
 #define WRITE											0x03U
@@ -32,9 +33,9 @@
 #define FAST_BULK_READ						0x9AU
 
 // DXL Control Table EEPROM
-#define ID_ADDR             				07    	//range 0~252
-#define BUAD_RATE_ADDR           		08    	//range 1~7                   3=1Mbps
-#define RETURN_DELAY_TIME_ADDR   		09    	//range 0~254                 default 250
+#define ID_ADDR             				7	    	//range 0~252
+#define BUAD_RATE_ADDR           		8   	 	//range 1~7                   3=1Mbps
+#define RETURN_DELAY_TIME_ADDR   		9   	 	//range 0~254                 default 250
 #define DRIVE_MODE_ADDR          		10    	//range 0~5
 #define OPERATING_MODE_ADDR      		11    	//
 #define SECONDARY_ID_ADDR        		12    	//range 0~252                 default 255
@@ -72,36 +73,18 @@
 /* DXL Handler --------------------------------------------------------------------------- */
 
 // DXL State
-#define DXL_IDLE							0x00U
-#define DXL_TRANSMIT_WAIT			0x01U
-#define DXL_TRANSMIT_ERR			0x02U
-#define DXL_RECIEVE_WAIT			0x03U
-#define DXL_RECIEVE_PARSING		0x04U
-#define DXL_RECIEVE_ERR				0x05U
-#define DXL_CPLT							0x06U
-#define DXL_REGISTER_ERR			0x07U
+#define DXL_IDLE									0x00U
+#define DXL_TRANSMIT_WAIT					0x01U
+#define DXL_RECIEVE_WAIT					0x02U
+#define DXL_RECIEVE_PARSING				0x03U
+#define DXL_CPLT									0x04U
 
-// Parsing Type
-#define NO_INST									0x00U
-#define P_WRITE									0x01U
-#define P_SYNC_WRITE						0x02U
-#define P_PING									0x03U
-#define P_OPERATING_MODE				0x04U
-#define P_HOMING_OFFSET					0x05U
-#define P_CURRENT_LIMIT					0x06U
-#define P_VELOCITY_LIMIT				0x07U
-#define P_MAX_POSITION_LIMIT		0x08U
-#define P_MIN_POSITION_LIMIT		0x09U
-#define P_TORQUE_ENABLE					0x0AU
-#define P_LED										0x0BU
-#define P_STATUS_RETURN_LEVEL		0x0CU
-#define P_GOAL_CURRENT					0x0DU
-#define P_GOAL_VELOCITY					0x0EU
-#define P_GOAL_POSITION					0x0FU
-#define P_MOVING								0x10U
-#define P_PRESENT_CURRENT				0x11U
-#define P_PRESENT_VELOCITY			0x12U
-#define P_PRESENT_POSITION			0x13U
+#define DXL_ERR_CODE							0x10U
+#define DXL_TRANSMIT_ERR					0x11U
+#define DXL_RECIEVE_ERR						0x12U
+#define DXL_REGISTER_ERR					0x13U
+#define DXL_TRANSMIT_TIMEOUT_ERR	0x14U
+#define DXL_RECIEVE_TIMEOUT_ERR		0x15U
 
 // DXL Packet Index
 #define DXL_PACKET_ID								4
@@ -118,9 +101,18 @@
 #define DXL_SHIFT_8_BIT				8
 
 // System Interface
-#define DXL_TIMEOUT								100
-#define DXL_ENABLE								1
-#define DXL_DISABLE								0
+#define DXL_TIMEOUT					10
+#define DXL_ON							1
+#define DXL_OFF							0
+
+#define DXL_RETRY_INFINITE		100
+#define DXL_RETRY_1						1
+#define DXL_RETRY_2						2
+#define DXL_RETRY_3						3
+
+#define DXL_WRITE_OK			0x00U
+#define DXL_WRITE_ERR			0x01U
+#define DXL_TIMEOUT_ERR		0x02U
 /* DXL Handler --------------------------------------------------------------------------- */
 
 

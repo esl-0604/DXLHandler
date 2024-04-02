@@ -30,7 +30,6 @@
 
 using namespace std;
 
-
 struct tPSensorStatus {
 		volatile uint8_t ucPSensorDetectFlag = SENSOR_NOT_DETECTED;
 		volatile uint8_t ucPSensorHomingState = HOMING_START;
