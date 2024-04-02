@@ -12,7 +12,6 @@
 
 #include <map>
 #include <vector>
-#include <functional>
 #include <main.h>
 #include <stdint.h>
 #include "Packet.h"
