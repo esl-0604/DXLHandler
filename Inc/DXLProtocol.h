@@ -27,11 +27,6 @@ class DXLProtocol {
 		uint8_t _ucInstruction;						// #Inst 		= 1
 		uint8_t* _pucParams;							// #Params 	= X
 
-		// Receive
-		uint8_t _ucError;									// #Error 	= 1
-		bool _bIsCRCValidate;							// 패킷의 유효성
-		bool _bIsByteStuffing;						// Byte Stuffing 유무
-
 
 	// Methods
 	public:

@@ -54,9 +54,9 @@ void PSensorHandler::SetPSensorStatusHomingStateReset(){
 }
 
 // PSensor Handler Interface ----------------------------------------------------------------------
-void PSensorHandler::SetPSensorMapInit(uint8_t* pucIdList){
+void PSensorHandler::SetPSensorMapInit(uint8_t* pucPSensorIdList){
 	for(size_t i=0; i<this->_ucTotalPSensorCnt; ++i){
-		this->_mPSensorStatusList[pucIdList[i]] = new tPSensorStatus;
+		this->_mPSensorStatusList[pucPSensorIdList[i]] = new tPSensorStatus;
 	}
 }
 

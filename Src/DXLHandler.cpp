@@ -24,72 +24,6 @@ DXLHandler::~DXLHandler(){
 }
 
 
-// DXL Status Interface -----------------------------------------------------------------------------------
-uint8_t DXLHandler::GetDXLStatusOperatingMode(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->ucOperatingMode);
-}
-
-int32_t DXLHandler::GetDXLStatusHomingOffset(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nHomingOffset);
-}
-
-int32_t DXLHandler::GetDXLStatusCurrentLimit(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nCurrentLimit);
-}
-
-int32_t DXLHandler::GetDXLStatusVelocityLimit(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nVelocityLimit);
-}
-
-int32_t DXLHandler::GetDXLStatusMaxPositionLimit(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nMaxPositionLimit);
-}
-
-int32_t DXLHandler::GetDXLStatusMinPositionLimit(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nMinPositionLimit);
-}
-
-uint8_t DXLHandler::GetDXLStatusTorqueEnable(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->ucTorqueEnable);
-}
-
-uint8_t DXLHandler::GetDXLStatusLED(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->ucLED);
-}
-
-uint8_t DXLHandler::GetDXLStatusMoving(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->ucMoving);
-}
-
-uint8_t DXLHandler::GetDXLStatusStatusReturnLevel(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->ucStatusReturnLevel);
-}
-
-int32_t DXLHandler::GetDXLStatusGoalCurrent(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nGoalCurrent);
-}
-
-int32_t DXLHandler::GetDXLStatusGoalVelocity(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nGoalVelocity);
-}
-
-int32_t DXLHandler::GetDXLStatusGoalPosition(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nGoalPosition);
-}
-
-int32_t DXLHandler::GetDXLStatusPresentCurrent(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nPresentCurrent);
-}
-
-int32_t DXLHandler::GetDXLStatusPresentVelocity(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nPresentVelocity);
-}
-
-int32_t DXLHandler::GetDXLStatusPresentPosition(uint8_t ucID){
-	return(this->_mDXLStatusList[ucID]->nPresentPosition);
-}
-
-
 // DXL Handler Interface -----------------------------------------------------------------------------------
 void DXLHandler::SetDXLInit(){
 	this->_ucDxlState = DXL_IDLE;
@@ -101,9 +35,9 @@ void DXLHandler::SetDXLInit(){
 	this->_DXLProtocol.SetClear();
 }
 
-void DXLHandler::SetDXLMapInit(uint8_t* pucIdList){
+void DXLHandler::SetDXLMapInit(uint8_t* pucDXLIdList){
 	for(size_t i=0; i<this->_ucTotalDXLCnt; ++i){
-		this->_mDXLStatusList[pucIdList[i]] = new tDXLStatus;
+		this->_mDXLStatusList[pucDXLIdList[i]] = new tDXLStatus;
 	}
 }
 
@@ -327,6 +261,72 @@ void DXLHandler::TransmitAndWaitUntilCplt(Packet TxPacket){
 	this->_ucDxlState = DXL_TRANSMIT_WAIT;
 	this->_UARTHandler.TransmitPacket( TxPacket );
 	this->WaitUntilCplt();
+}
+
+
+// DXL Status Interface -----------------------------------------------------------------------------------
+uint8_t DXLHandler::GetDXLStatusOperatingMode(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucOperatingMode);
+}
+
+int32_t DXLHandler::GetDXLStatusHomingOffset(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nHomingOffset);
+}
+
+int32_t DXLHandler::GetDXLStatusCurrentLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nCurrentLimit);
+}
+
+int32_t DXLHandler::GetDXLStatusVelocityLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nVelocityLimit);
+}
+
+int32_t DXLHandler::GetDXLStatusMaxPositionLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nMaxPositionLimit);
+}
+
+int32_t DXLHandler::GetDXLStatusMinPositionLimit(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nMinPositionLimit);
+}
+
+uint8_t DXLHandler::GetDXLStatusTorqueEnable(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucTorqueEnable);
+}
+
+uint8_t DXLHandler::GetDXLStatusLED(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucLED);
+}
+
+uint8_t DXLHandler::GetDXLStatusMoving(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucMoving);
+}
+
+uint8_t DXLHandler::GetDXLStatusStatusReturnLevel(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->ucStatusReturnLevel);
+}
+
+int32_t DXLHandler::GetDXLStatusGoalCurrent(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nGoalCurrent);
+}
+
+int32_t DXLHandler::GetDXLStatusGoalVelocity(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nGoalVelocity);
+}
+
+int32_t DXLHandler::GetDXLStatusGoalPosition(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nGoalPosition);
+}
+
+int32_t DXLHandler::GetDXLStatusPresentCurrent(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nPresentCurrent);
+}
+
+int32_t DXLHandler::GetDXLStatusPresentVelocity(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nPresentVelocity);
+}
+
+int32_t DXLHandler::GetDXLStatusPresentPosition(uint8_t ucID){
+	return(this->_mDXLStatusList[ucID]->nPresentPosition);
 }
 
 

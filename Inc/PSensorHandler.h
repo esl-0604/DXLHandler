@@ -55,7 +55,7 @@ class PSensorHandler {
 		void SetPSensorStatusHomingStateReset();
 
 		// PSensor Handler Interface ---------------------------------------------------
-		void SetPSensorMapInit(uint8_t* pucIdList);
+		void SetPSensorMapInit(uint8_t* pucPSensorIdList);
 		void SetPSensorMapClear();
 
 

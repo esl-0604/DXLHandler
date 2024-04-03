@@ -70,6 +70,22 @@ class DXLHandler {
 		DXLHandler(UART_HandleTypeDef* huart, uint8_t ucTotalDXLCnt);
 		virtual ~DXLHandler();
 
+		// DXL Handler Interface --------------------------------------------------
+		void SetDXLInit();
+		void SetDXLMapInit(uint8_t* pucDXLIdList);
+		void SetDXLMapClear();
+		void SetDxlState(uint8_t ucDxlState);
+		void ParsingRxData();
+		uint8_t GetDxlState();
+		int32_t CalculateParams(uint8_t* pucTargetParams, uint8_t ucTargetByte);
+
+
+		// UART Interface ---------------------------------------------------------
+		void TransmitPacketCplt();
+		void RecievePacketCplt(uint16_t Size);
+		void WaitUntilCplt();
+		void TransmitAndWaitUntilCplt(Packet TxPacket);
+
 
 		// DXL Status Interface ---------------------------------------------------
 		uint8_t GetDXLStatusOperatingMode				(uint8_t ucID);
@@ -88,23 +104,6 @@ class DXLHandler {
 		int32_t GetDXLStatusPresentCurrent			(uint8_t ucID);
 		int32_t GetDXLStatusPresentVelocity			(uint8_t ucID);
 		int32_t GetDXLStatusPresentPosition			(uint8_t ucID);
-
-
-		// DXL Handler Interface --------------------------------------------------
-		void SetDXLInit();
-		void SetDXLMapInit(uint8_t* pucIdList);
-		void SetDXLMapClear();
-		void SetDxlState(uint8_t ucDxlState);
-		void ParsingRxData();
-		uint8_t GetDxlState();
-		int32_t CalculateParams(uint8_t* pucTargetParams, uint8_t ucTargetByte);
-
-
-		// UART Interface ---------------------------------------------------------
-		void TransmitPacketCplt();
-		void RecievePacketCplt(uint16_t Size);
-		void WaitUntilCplt();
-		void TransmitAndWaitUntilCplt(Packet TxPacket);
 
 
 		// DXL Ping Call ----------------------------------------------------------
@@ -212,10 +211,10 @@ class DXLHandler {
 
 		// DXL Call Templete --------------------------------------------------------
 		template<typename WriteFunction, typename ReadFunction>
-		uint8_t WriteReadTemplete				(uint8_t ucID, int32_t nTargetParams, uint8_t ucRetry, WriteFunction WriteFunc, ReadFunction ReadFunc);
+		uint8_t WriteReadTemplete(uint8_t ucID, int32_t nTargetParams, uint8_t ucRetry, WriteFunction WriteFunc, ReadFunction ReadFunc);
 
 		template<typename SyncWriteFunction, typename SyncReadFunction>
-		uint8_t SyncWriteReadTemplete		(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry, SyncWriteFunction SyncWriteFunc, SyncReadFunction SyncReadFunc);
+		uint8_t SyncWriteReadTemplete(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry, SyncWriteFunction SyncWriteFunc, SyncReadFunction SyncReadFunc);
 };
 
 
