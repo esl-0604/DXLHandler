@@ -289,7 +289,7 @@ DXL을 제어할 수 있는 모든 인터페이스를 관리하는 객체
 |int32_t 함수           |CalculateParams(uint8_t* pucTargetParams, uint8_t ucTargetByte) |ParsingRxData()에서 호출하는 함수. 실제로 Packet의 Params 부분을 전달받아 값을 추출하는 함수
 |void 함수              |TransmitPacketCplt()               |Task Handler의 TransmitCplt()에서 호출하는 함수. UARTHandler를 수신모드로 바꾸고, _ucDxlState를 수신대기 상태로 업데이트 한다.
 |void 함수              |RecievePacketCplt(uint16_t Size)   |Task Handler의 RecieveCplt()에서 호출하는 함수. CRC 체크를 통과한 경우, ParsingRxData()를 호출하여 파싱을 진행한다.
-|void 함수              |WaitUntilCplt()                    |Packet을 송신하고, 해당 Packet에 대한 수신 Packet이 올 때까지 기다리는 함수. 이를 통해 Task Handler 측에서 굉장히 사용자 친화적인 동기적 인터페이스를 조성할 수 있다. 다만, 기다리는 시간이 Process 주기에 영향을 주지 않도록 Timeout을 체크해야한다.
+|void 함수              |WaitUntilCplt()                    |Packet을 송신하고, 해당 Packet에 대한 수신 Packet이 올 때까지 기다리는 함수. 이를 통해 Task Handler 측에서 굉장히 직관적인 동기적 인터페이스를 조성할 수 있다. 다만, 기다리는 시간이 Process 주기에 영향을 주지 않도록 Timeout을 체크해야한다.
 |void 함수              |TransmitAndWaitUntilCplt(Packet TxPacket)    |Packet을 송신하고, 수신이 완전히 처리될 때까지 기다리는 함수. 내부에서 Packet 송신 함수, WaitUntilCplt() 등을 호출한다. 
 |uint8_t / int32_t 함수 |GetDXLStatus_______(uint8_t ucID)  |전달된 DXL ID값으로 _mDXLStatusList에서 특정 Status 값을 읽어오는 함수
 |void 함수              |SyncPing()                         |SyncPing Packet을 송신하는 함수
