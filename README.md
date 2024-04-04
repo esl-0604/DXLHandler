@@ -108,8 +108,8 @@ Status Packet이 UART Handler의 버퍼에 도착하면, DXL Protocol은 이 패
 SyncRead의 경우, 여러 개의 Status Packet이 전달되므로 도착해야하는 모든 Status Packet이 도착하여 처리될 때까지 DXL Handler가 loop 안에서 기다리다가 전부 완료되면 Task Handler에서 호출한 명령이 전부 처리되었음을 알리며 함수가 종료된다. 
 
 ```
-SyncRead의 연속적인 Status Packet 처리를 하는 동안, DXL Handler가 loop 안에서 기다리는 동기적인 방식이기 때문에, DXL Handler의  Main_Process의 실행주기가 DXL의 전체 응답시간보다 짧아서는 안된다.
-만약, Main_Process의 실행주기를 줄일 수 없는 상황이라면 해당 시스템을 사용하는 것은 다소 위험하다. 
+SyncRead의 연속적인 Status Packet 처리를 하는 동안, DXL Handler가 loop 안에서 기다리는 동기적인 방식이기 때문에, DXL Handler의 Main_Process의 실행주기가 DXL의 전체 응답시간보다 짧아서는 안된다.
+만약, Main_Process의 실행주기를 늘릴 수 없는 상황이라면 해당 시스템을 사용하는 것은 다소 위험하다. 
 그럼에도 불구하고 이렇게 설계한 이유는 이 시스템을 사용하는 환경이 생산 지그이기에 실행주기를 여유롭게 설정할 수 있다는 점, 그리고 Task Handler 측에서 굉장히 직관적인 사용자 인터페이스를 사용할 수 있다는 점 때문이다. 
 Task Handler에서 DXL Handler에게 명령을 내릴 때는 단 하나의 함수만 호출하면 되고, 만약 연속적으로 명령을 내릴 때는 단순히 순차적으로 원하는 명령을 호출하기만 하면 된다. 이러한 동기적인 인터페이스는 사용자가 커스텀 하기에 굉장히 용이할 수 있겠다고 판단하였다.
 ```
@@ -126,6 +126,8 @@ TaskHandler g_TaskHandler(&huart);
 ```
 
 필요한 전역변수는 TaskHandler 객체 단 하나이다. 그리고 해당 객체에게 UART 통신에 사용할  huart의 주소값만 넘기면 된다.
+
+---
 
 ##### TIM Interupt Callback 함수 세팅
 
@@ -145,6 +147,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
 ```
 
 위의 코드처럼 원하는 주기의 Timer에 Main_Process()를 호출해주고, 필요한 경우 다른 주기의 Timer에 GPIO 관련 함수들을 호출해주면 된다.
+
+---
 
 ##### UART Tx/Rx Callback 함수 세팅
 
