@@ -104,18 +104,30 @@ void TaskHandler::Main_Process(){
 
 
 			// ERROM Write & Read
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnableOFFParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadOperatingMode(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadHomingOffset(DXL_CNT, this->_pucDXLIDList, pnHomingOffsetParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadCurrentLimit(DXL_CNT, this->_pucDXLIDList, pnCurrentLimitParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadVelocityLimit(DXL_CNT, this->_pucDXLIDList, pnVelocityLimitParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadMaxPositionLimit(DXL_CNT, this->_pucDXLIDList, pnMaxPositionLimitParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadMinPositionLimit(DXL_CNT, this->_pucDXLIDList, pnMinPositionLimitParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnableOFFParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadOperatingMode(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadHomingOffset(DXL_CNT, this->_pucDXLIDList, pnHomingOffsetParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadCurrentLimit(DXL_CNT, this->_pucDXLIDList, pnCurrentLimitParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadVelocityLimit(DXL_CNT, this->_pucDXLIDList, pnVelocityLimitParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadMaxPositionLimit(DXL_CNT, this->_pucDXLIDList, pnMaxPositionLimitParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadMinPositionLimit(DXL_CNT, this->_pucDXLIDList, pnMinPositionLimitParams, DXL_RETRY_3);
+
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnTorqueEnableOFFParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, OPERATING_MODE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, pnHomingOffsetParams, HOMING_OFFSET_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_2Byte(DXL_CNT, this->_pucDXLIDList, pnCurrentLimitParams, CURRENT_LIMIT_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, pnVelocityLimitParams, VELOCITY_LIMIT_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, pnMaxPositionLimitParams, MAX_POSITION_LIMIT_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, pnMinPositionLimitParams, MIN_POSITION_LIMIT_ADDR, DXL_RETRY_3);
 
 			// RAM Write & Read
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnableONParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadLED(DXL_CNT, this->_pucDXLIDList, pnLEDONParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadStatusReturnLevel(DXL_CNT, this->_pucDXLIDList, pnStatusReturnLevelParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnableONParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadLED(DXL_CNT, this->_pucDXLIDList, pnLEDONParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadStatusReturnLevel(DXL_CNT, this->_pucDXLIDList, pnStatusReturnLevelParams, DXL_RETRY_3);
+
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnTorqueEnableONParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnLEDONParams, LED_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnStatusReturnLevelParams, STATUS_RETURN_LEVEL_ADDR, DXL_RETRY_3);
 
 			if(this->_DXLHandler.GetDxlState() == DXL_IDLE){
 				this->_ucMainState = MAIN_IDLE;
@@ -220,9 +232,11 @@ void TaskHandler::Main_Process(){
 			/* USER CODE BEGIN Exit */
 
 			int32_t pnExitParams[8] = {1, 0, 2, 0, 3, 0, 4, 0};
-			this->_DXLHandler.SyncWriteReadLED(DXL_CNT, this->_pucDXLIDList, pnExitParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnExitParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadLED(DXL_CNT, this->_pucDXLIDList, pnExitParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnExitParams, DXL_RETRY_3);
 
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT,  this->_pucDXLIDList, pnExitParams, LED_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT,  this->_pucDXLIDList, pnExitParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
 
 			/* USER CODE END Exit */
 
@@ -338,16 +352,24 @@ void TaskHandler::GPIO_PWM(volatile uint32_t* pnPowerPWM, volatile uint32_t* pnH
 uint8_t TaskHandler::PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID){
 	switch(this->_PSensorHandler.GetPSensorStatusHomingState(ucPSensorID)){
 		case HOMING_START: {
-			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_OFF, DXL_RETRY_3);
-			this->_DXLHandler.WriteReadOperatingMode(ucDXLID, 1, DXL_RETRY_3);
-			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_ON, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_OFF, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadOperatingMode(ucDXLID, 1, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_ON, DXL_RETRY_3);
+
+			this->_DXLHandler.WriteReadCMD_1Byte(ucDXLID, TORQUE_ENABLE_ADDR, DXL_OFF, DXL_RETRY_3);
+			this->_DXLHandler.WriteReadCMD_1Byte(ucDXLID, OPERATING_MODE_ADDR, 1, DXL_RETRY_3);
+			this->_DXLHandler.WriteReadCMD_1Byte(ucDXLID, TORQUE_ENABLE_ADDR, DXL_ON, DXL_RETRY_3);
 
 			if(this->_PSensorHandler.GetPSensorStatusSensorFlag(ucPSensorID) == SENSOR_DETECTED){
-				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_FAST_FAR_VELOCITY, DXL_RETRY_3);
+//				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_FAST_FAR_VELOCITY, DXL_RETRY_3);
+
+				this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, GOAL_VELOCITY_ADDR, HOMING_FAST_FAR_VELOCITY, DXL_RETRY_3);
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_FAST_FAR);
 			}
 			else{
-				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_FAST_CLOSE_VELOCITY, DXL_RETRY_3);
+//				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_FAST_CLOSE_VELOCITY, DXL_RETRY_3);
+
+				this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, GOAL_VELOCITY_ADDR, HOMING_FAST_CLOSE_VELOCITY, DXL_RETRY_3);
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_FAST_CLOSE);
 			}
 			break;
@@ -355,7 +377,9 @@ uint8_t TaskHandler::PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID){
 
 		case HOMING_FAST_FAR: {
 			if(_PSensorHandler.GetPSensorStatusSensorFlag(ucPSensorID) == SENSOR_NOT_DETECTED){
-				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_SLOW_CLOSE_VELOCITY, DXL_RETRY_3);
+//				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_SLOW_CLOSE_VELOCITY, DXL_RETRY_3);
+
+				this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, GOAL_VELOCITY_ADDR, HOMING_SLOW_CLOSE_VELOCITY, DXL_RETRY_3);
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_SLOW_CLOSE);
 			}
 			break;
@@ -363,7 +387,9 @@ uint8_t TaskHandler::PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID){
 
 		case HOMING_FAST_CLOSE: {
 			if(_PSensorHandler.GetPSensorStatusSensorFlag(ucPSensorID) == SENSOR_DETECTED){
-				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_SLOW_FAR_VELOCITY, DXL_RETRY_3);
+//				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_SLOW_FAR_VELOCITY, DXL_RETRY_3);
+
+				this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, GOAL_VELOCITY_ADDR, HOMING_SLOW_FAR_VELOCITY, DXL_RETRY_3);
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_SLOW_FAR);
 			}
 			break;
@@ -371,7 +397,9 @@ uint8_t TaskHandler::PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID){
 
 		case HOMING_SLOW_FAR: {
 			if(_PSensorHandler.GetPSensorStatusSensorFlag(ucPSensorID) == SENSOR_NOT_DETECTED){
-				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_SLOW_CLOSE_VELOCITY, DXL_RETRY_3);
+//				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, HOMING_SLOW_CLOSE_VELOCITY, DXL_RETRY_3);
+
+				this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, GOAL_VELOCITY_ADDR, HOMING_SLOW_CLOSE_VELOCITY, DXL_RETRY_3);
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_SLOW_CLOSE);
 			}
 			break;
@@ -379,24 +407,31 @@ uint8_t TaskHandler::PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID){
 
 		case HOMING_SLOW_CLOSE: {
 			if(_PSensorHandler.GetPSensorStatusSensorFlag(ucPSensorID) == SENSOR_DETECTED){
-				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, DXL_STOP_VELOCITY, DXL_RETRY_3);
+//				this->_DXLHandler.WriteReadGoalVelocity(ucDXLID, DXL_STOP_VELOCITY, DXL_RETRY_3);
+
+				this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, GOAL_VELOCITY_ADDR, DXL_STOP_VELOCITY, DXL_RETRY_3);
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_OFFSET_SET);
 			}
 			break;
 		}
 
 		case HOMING_OFFSET_SET: {
-			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_OFF, DXL_RETRY_3);
-			this->_DXLHandler.WriteReadHomingOffset(ucDXLID, 0, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_OFF, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadHomingOffset(ucDXLID, 0, DXL_RETRY_3);
+
+			this->_DXLHandler.WriteReadCMD_1Byte(ucDXLID, TORQUE_ENABLE_ADDR, DXL_OFF, DXL_RETRY_3);
+			this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, HOMING_OFFSET_ADDR, 0, DXL_RETRY_3);
 
 			// 현재 위치를 position = 0으로 Offset 세팅
-			this->_DXLHandler.ReadPresentPosition(ucDXLID);
-			uint8_t ucSettingCplt = this->_DXLHandler.WriteReadHomingOffset(ucDXLID, (-1) * this->_DXLHandler.GetDXLStatusPresentPosition(ucDXLID), DXL_RETRY_INFINITE);
+//			uint8_t ucSettingCplt = this->_DXLHandler.WriteReadHomingOffset(ucDXLID, (-1) * this->_DXLHandler.ReadPresentPosition(ucDXLID), DXL_RETRY_INFINITE);
+
+			uint8_t ucSettingCplt = this->_DXLHandler.WriteReadCMD_4Byte(ucDXLID, HOMING_OFFSET_ADDR, (-1) * this->_DXLHandler.ReadCMD_4Byte(ucDXLID, PRESENT_POSITION_ADDR), DXL_RETRY_INFINITE);
+
 			if(ucSettingCplt != DXL_WRITE_OK){
 				this->_ucMainState = MAIN_HOMING_ERR;
 			}
 
-			int32_t nPresentPosition = this->_DXLHandler.ReadPresentPosition(ucDXLID);
+			int32_t nPresentPosition = this->_DXLHandler.ReadCMD_4Byte(ucDXLID, PRESENT_POSITION_ADDR);
 			if(((-1) * DXL_POSITION_OFFSET <= nPresentPosition) && (nPresentPosition <= DXL_POSITION_OFFSET)){
 				this->_PSensorHandler.SetPSensorStatusHomingState(ucPSensorID, HOMING_CPLT);
 			}
@@ -404,8 +439,11 @@ uint8_t TaskHandler::PSensorHoming(uint8_t ucPSensorID, uint8_t ucDXLID){
 		}
 
 		case HOMING_CPLT: {
-			this->_DXLHandler.WriteReadOperatingMode(ucDXLID, 3, DXL_RETRY_3);
-			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_ON, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadOperatingMode(ucDXLID, 3, DXL_RETRY_3);
+//			this->_DXLHandler.WriteReadTorqueEnable(ucDXLID, DXL_ON, DXL_RETRY_3);
+
+			this->_DXLHandler.WriteReadCMD_1Byte(ucDXLID, OPERATING_MODE_ADDR, 3, DXL_RETRY_3);
+			this->_DXLHandler.WriteReadCMD_1Byte(ucDXLID, TORQUE_ENABLE_ADDR, DXL_ON, DXL_RETRY_3);
 			return 1;
 			break;
 		}
@@ -427,18 +465,26 @@ uint8_t TaskHandler::DXLOperation(){
 			int32_t pnOperatingModeParams[8] = {DXL_1, 1, DXL_2, 1, DXL_3, 1, DXL_4, 1};
 			int32_t pnGoalVelocityParams[8] = {DXL_1, 200, DXL_2, 200, DXL_3, 200, DXL_4, 200};
 
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOffParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadOperatingMode(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOnParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadGoalVelocity(DXL_CNT, this->_pucDXLIDList, pnGoalVelocityParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOffParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadOperatingMode(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOnParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadGoalVelocity(DXL_CNT, this->_pucDXLIDList, pnGoalVelocityParams, DXL_RETRY_3);
+
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOffParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, OPERATING_MODE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOnParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, pnGoalVelocityParams, GOAL_VELOCITY_ADDR, DXL_RETRY_3);
 
 			this->_ucOperationState = OPERATION_BUSY;
 			break;
 		}
 
 		case OPERATION_BUSY: {
-			this->_DXLHandler.SyncReadPresentVelocity(DXL_CNT, this->_pucDXLIDList);
-			this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
+//			this->_DXLHandler.SyncReadPresentVelocity(DXL_CNT, this->_pucDXLIDList);
+//			this->_DXLHandler.SyncReadPresentPosition(DXL_CNT, this->_pucDXLIDList);
+
+			this->_DXLHandler.SyncReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, PRESENT_VELOCITY_ADDR);
+			this->_DXLHandler.SyncReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, PRESENT_POSITION_ADDR);
 			break;
 		}
 
@@ -448,10 +494,16 @@ uint8_t TaskHandler::DXLOperation(){
 			int32_t pnTorqueEnalbeOnParams[8] = {DXL_1, 1, DXL_2, 1, DXL_3, 1, DXL_4, 1};
 			int32_t pnOperatingModeParams[8] = {DXL_1, 3, DXL_2, 3, DXL_3, 3, DXL_4, 3};
 
-			this->_DXLHandler.SyncWriteReadGoalVelocity(DXL_CNT, this->_pucDXLIDList, pnGoalVelocityParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOffParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadOperatingMode(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, DXL_RETRY_3);
-			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOnParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadGoalVelocity(DXL_CNT, this->_pucDXLIDList, pnGoalVelocityParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOffParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadOperatingMode(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, DXL_RETRY_3);
+//			this->_DXLHandler.SyncWriteReadTorqueEnable(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOnParams, DXL_RETRY_3);
+
+			this->_DXLHandler.SyncWriteReadCMD_4Byte(DXL_CNT, this->_pucDXLIDList, pnGoalVelocityParams, GOAL_VELOCITY_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOffParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnOperatingModeParams, OPERATING_MODE_ADDR, DXL_RETRY_3);
+			this->_DXLHandler.SyncWriteReadCMD_1Byte(DXL_CNT, this->_pucDXLIDList, pnTorqueEnalbeOnParams, TORQUE_ENABLE_ADDR, DXL_RETRY_3);
+
 
 			this->_ucOperationState = OPERATION_CPLT;
 			break;

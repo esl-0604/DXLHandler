@@ -72,16 +72,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "main.h"
-#include "DXLHandler.h"
+#include "DXLHandlerV2.h"
 #include "PSensorHandler.h"
 
-class DXLHandler;
+//class DXLHandler;
+class DXLHandlerV2;
 class PSensorHandler;
 
 class TaskHandler {
 	// Variables
 	private:
-		DXLHandler _DXLHandler;							// DXL Handler
+		DXLHandlerV2 _DXLHandler;						// DXL Handler
 		PSensorHandler _PSensorHandler;			// PhotoSensor Handler
 		uint8_t* _pucDXLIDList;							// DXL 전체 ID List
 		uint8_t* _pucPSencorIDList;					// PhotoSensor 전체 ID List
