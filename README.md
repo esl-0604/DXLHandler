@@ -1,4 +1,4 @@
-# DXL Bare Metal Base Module - V1  
+# DXL Bare Metal Base Module - V2  
 
 
 작성자 : 이은상
@@ -6,6 +6,8 @@
 베어메탈 환경에서 DXL(다이나믹셀)을 제어할 수 있는 가장 기초가 되는 시스템.
 
 싱글톤 패턴이 적용되었고, V1 에서는 사용자가 직접 접하는 함수는 **일반화** / **특수화** 방식 중 특수화 방식을, 보이지 않는 부분에 있어서는 일반화 방식을 채택하였다.
+
+새롭게 추가된 V2에서는 사용자 인터페이스도 일반화 방식을 채택하여, 좀더 코드 사이즈를 경량화 하였다.
 
 ```
 일반화 : 함수를 정의함에 있어서, 공통 부분을 캡슐화 하여 인자를 통해 다양한 케이스를 처리하도록 설계한 방식 
@@ -302,6 +304,46 @@ DXL을 제어할 수 있는 모든 인터페이스를 관리하는 객체
 |uint8_t 함수           |SyncWriteRead_______(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry)      |전달된 DXL IdNum값과 Params 값으로 특정 Address에 해당하는 Sync Write Packet을 송신하고, 실제로 그 값이 제대로 씌여졌는지 다시 Sync Read Packet을 송신하여 확인하는 함수. 확인 실패시, 전달된 ucRetry 횟수만큼 반복하며, 해당 횟수 안에 확인을 실패할 경우, Err 값을 반환한다.
 |uint8_t 함수           |WriteReadTemplete(uint8_t ucID, int32_t nTargetParams, uint8_t ucRetry, WriteFunction WriteFunc, ReadFunction ReadFunc) |모든 WriteRead 함수의 공통부분을 추출한 Templete 함수. retry loop문이 포함되어 있다.
 |uint8_t 함수           |SyncWriteReadTemplete(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucRetry, SyncWriteFunction SyncWriteFunc, SyncReadFunction SyncReadFunc) |모든 SyncWriteRead 함수의 공통부분을 추출한 Templete 함수. retry loop문이 포함되어 있다.
+
+---
+
+##### DXLHandlerV2.h / DXLHandlerV2.cpp
+
+DXL을 제어할 수 있는 모든 인터페이스를 관리하는 객체의 두번째 버전
+
+Read, Write, Get 함수 등이 전부 모듈화된 CMD 함수로 되어있으며, 사용자가 원하는 파라미터를 전달하는 형태로 구성되었다. 
+  
+
+|타입|멤버|설명|
+|:---|:---|:---|
+|UARTHandler 객체       |_UARTHandler                       |UART 인터페이스를 관리하는 객체            
+|DXLProtocol 객체       |_DXLProtocol                       |DXL Protocol Packet을 생성 및 관리하는 객체    
+|map<uint8_t, tDXLStatus*> |_mDXLStatusList                 |DXLStatus 값들을 저장하고 있는 배열. DXL의 Id값을 key 값으로 지닌다.                                   
+|uint8_t 변수           |_ucTotalDXLCnt                     |시스템에 등록되어 있는 DXL 개수                              
+|uint8_t 변수           |_ucDxlState                        |DXL Handler의 상태를 나타내는 변수                          
+|uint8_t 변수           |_ucParsingType                     |Read Packet 송신 후 수신된 Packet을 파싱할 때, Read Packet에 전달되었던 Target Address 값 
+|uint8_t 변수           |_ucTxIdCnt                         |Packet 송신 시에 전달된 DXL ID 개수. 수신되어야할 패킷 개수를 판단하는 기준이 됨.                 
+|uint8_t 변수           |_ucRxIdCnt                         |현재까지 수신되어 파싱까지 완료된 패킷의 개수. _ucTxIdCnt와 동일값이 될 때까지 수신모드를 유지함.
+|void 함수              |SetDXLInit()                       |DXL Handler 내부 변수들을 전부 초기화 하는 함수                
+|void 함수              |SetDXLMapInit(uint8_t* pucDXLIdList)  |_mDXLStatusList에 전달된 pucDXLIdList 있는 ID를 키값으로 배열을 채우는 함수
+|void 함수              |SetDXLMapClear()                   |_mDXLStatusList에 저장되어 있는 Status 값들을 전부 제거하고, 할당된 메모리를 해제하는 함수
+|void 함수              |SetDxlState(uint8_t ucDxlState)    |_ucDxlState 값을 업데이트 하는 함수
+|void 함수              |ParsingRxData()                    |수신된 RxPacket을 파싱하여 필요한 값을 추출한 뒤, _mDXLStatusList에 저장하는 함수
+|uint8_t 함수           |GetDxlState()                      |_ucDxlState 값을 읽어오는 함수
+|int32_t 함수           |CalculateParams(uint8_t* pucTargetParams, uint8_t ucTargetByte) |ParsingRxData()에서 호출하는 함수. 실제로 Packet의 Params 부분을 전달받아 값을 추출하는 함수
+|void 함수              |TransmitPacketCplt()               |Task Handler의 TransmitCplt()에서 호출하는 함수. UARTHandler를 수신모드로 바꾸고, _ucDxlState를 수신대기 상태로 업데이트 한다.
+|void 함수              |RecievePacketCplt(uint16_t Size)   |Task Handler의 RecieveCplt()에서 호출하는 함수. CRC 체크를 통과한 경우, ParsingRxData()를 호출하여 파싱을 진행한다.
+|void 함수              |WaitUntilCplt()                    |Packet을 송신하고, 해당 Packet에 대한 수신 Packet이 올 때까지 기다리는 함수. 이를 통해 Task Handler 측에서 굉장히 직관적인 동기적 인터페이스를 조성할 수 있다. 다만, 기다리는 시간이 Process 주기에 영향을 주지 않도록 Timeout을 체크해야한다.
+|void 함수              |TransmitAndWaitUntilCplt(Packet TxPacket)    |Packet을 송신하고, 수신이 완전히 처리될 때까지 기다리는 함수. 내부에서 Packet 송신 함수, WaitUntilCplt() 등을 호출한다. 
+|uint8_t / int32_t 함수 |GetDXLStatusByTargetAddress(uint8_t ucID, uint8_t ucTargetAddress)  |전달된 DXL ID값과 TargetAddress값으로 _mDXLStatusList에서 특정 Status 값을 읽어오는 함수
+|void 함수              |SyncPing()                         |SyncPing Packet을 송신하는 함수
+|void 함수              |Ping(uint8_t ucID)                 |Ping Packet을 송신하는 함수
+|int32_t 함수           |ReadCMD_1Byte/ReadCMD_2Byte/ReadCMD_4Byte(uint8_t ucID, uint8_t ucTargetAddress)          |전달된 DXL ID값과 TargetAddress값으로 특정 Address에 해당하는 Read Packet을 송신하고 그 값을 읽어와 반환하는 함수
+|void 함수              |WriteCMD_1Byte/WriteCMD_2Byte/WriteCMD_4Byte(uint8_t ucID, int32_t nTargetParams)          |전달된 DXL ID값과 TargetAddress값, Params 값으로 특정 Address에 해당하는 Write Packet을 송신하는 함수
+|vector<int32_t> 함수   |SyncReadCMD_1Byte/SyncReadCMD_2Byte/SyncReadCMD_4Byte(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress)       |전달된 DXL IdNum 값과 IdList 값, TargetAddress값으로 특정 Address에 해당하는 Sync Read Packet을 송신하고 그 값을 읽어와 vector로 반환하는 함수. 반환형은 {DXL_1_ID, DXL_1_Params, DXL_2_ID, DXL_2_Params, ...} 형태로 반환된다.
+|void 함수              |SyncWriteCMD_1Byte/SyncWriteCMD_2Byte/SyncWriteCMD_4Byte(uint8_t ucIdNum, int32_t* pnTargetParams, uint8_t ucTargetAddress) |전달된 DXL IdNum 값과 Params 값, TargetAddress값으로 특정 Address에 해당하는 Sync Write Packet을 송신하는 함수
+|uint8_t 함수           |WriteReadCMD_1Byte/WriteReadCMD_2Byte/WriteReadCMD_4Byte(uint8_t ucID, uint8_t ucTargetAddress, int32_t nTargetParams, uint8_t ucRetry)      |전달된 DXL ID값과 Params 값, TargetAddress값으로 특정 Address에 해당하는 Write Packet을 송신하고, 실제로 그 값이 제대로 씌여졌는지 다시 Read Packet을 송신하여 확인하는 함수. 확인 실패시, 전달된 ucRetry 횟수만큼 반복하며, 해당 횟수 안에 확인을 실패할 경우, Err 값을 반환한다.
+|uint8_t 함수           |SyncWriteReadCMD_1Byte/SyncWriteReadCMD_2Byte/SyncWriteReadCMD_4Byte(uint8_t ucIdNum, uint8_t* pucIdList, int32_t* pnTargetParams, uint8_t ucTargetAddress, uint8_t ucRetry)      |전달된 DXL IdNum값과 Params 값, TargetAddress값으로 특정 Address에 해당하는 Sync Write Packet을 송신하고, 실제로 그 값이 제대로 씌여졌는지 다시 Sync Read Packet을 송신하여 확인하는 함수. 확인 실패시, 전달된 ucRetry 횟수만큼 반복하며, 해당 횟수 안에 확인을 실패할 경우, Err 값을 반환한다.
 
 ---
 
