@@ -19,13 +19,13 @@ class DXLProtocol {
 	// Variables
 	private:
 		// Transmit
-		uint8_t _ucTotalLength;						// Packet 전체 길이
-		uint8_t _ucParamsLength;					// Packet의 Params 길이
-		uint8_t* _pucHeader;							// #Header 	= 4
-		uint8_t _ucID;										// #ID 			= 1
-		uint8_t* _pucLength;	     		 		// #Length 	= 2, ( Length = TotalLength - 7 )
-		uint8_t _ucInstruction;						// #Inst 		= 1
-		uint8_t* _pucParams;							// #Params 	= X
+		uint8_t _ucTotalLength;			// Packet 전체 길이
+		uint8_t _ucParamsLength;		// Packet의 Params 길이
+		uint8_t* _pucHeader;			// #Header 	= 4
+		uint8_t _ucID;					// #ID 			= 1
+		uint8_t* _pucLength;	     	// #Length 	= 2, ( Length = TotalLength - 7 )
+		uint8_t _ucInstruction;			// #Inst 		= 1
+		uint8_t* _pucParams;			// #Params 	= X
 
 
 	// Methods
@@ -34,15 +34,15 @@ class DXLProtocol {
 		virtual ~DXLProtocol();
 
 		// DXL Protocol Interface ---------------------------------------------------------------------------------------
-		void SetHeader(); 																							// Header 세팅
-		void SetID(uint8_t ucID);																				// ID 세팅
-		void SetLength(uint8_t ucLength);																// Length 세팅
-		void SetInstruction(uint8_t ucInstruction);											// Instruction 세팅
-		void SetParams(uint8_t* pucParams, uint8_t ucParamsLength);			// Instruction 세팅
-//		void SetByteStuffing(uint8_t* pucParams);												// ByteStuffing 세팅
-		void SetCRC(uint8_t* pucPacket);																// CRC 세팅
-		void SetClear();																								// 멤버변수 전부 초기화
-		uint8_t* pucGetPacket();																				// 자신에게 세팅된 값들로 패킷을 만들어 반환하는 함수
+		void SetHeader(); 												// Header 세팅
+		void SetID(uint8_t ucID);										// ID 세팅
+		void SetLength(uint8_t ucLength);								// Length 세팅
+		void SetInstruction(uint8_t ucInstruction);						// Instruction 세팅
+		void SetParams(uint8_t* pucParams, uint8_t ucParamsLength);		// Instruction 세팅
+//		void SetByteStuffing(uint8_t* pucParams);						// ByteStuffing 세팅
+		void SetCRC(uint8_t* pucPacket);								// CRC 세팅
+		void SetClear();												// 멤버변수 전부 초기화
+		uint8_t* pucGetPacket();										// 자신에게 세팅된 값들로 패킷을 만들어 반환하는 함수
 
 
 		// Transmit Ping ------------------------------------------------------------------------------------------------
