@@ -518,4 +518,9 @@ uint8_t TaskHandler::DXLOperation(){
 	return 0;
 }
 
+void TaskHandler::Test_Process(){
+	this->DXLInit();
+	// Testing Code Start...
+}
+
 

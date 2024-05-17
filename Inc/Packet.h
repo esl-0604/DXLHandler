@@ -27,17 +27,17 @@ class Packet {
 	public:
 		Packet(uint16_t usPacketMaxLength = DXL_PACKET_MAX_SIZE);
 		virtual ~Packet();
-		uint8_t& operator[] (const uint8_t ucIndex);									// 배열 연산자
+		uint8_t& operator[] (const uint8_t ucIndex);		// 배열 연산자
 
 
 		// Get ----------------------------------------------------------------------
-		uint8_t* pucGetPacket();																			// 패킷 반환
-		uint16_t usGetPacketLength();																	// 패킷 길이 반환
+		uint8_t* pucGetPacket();							// 패킷 반환
+		uint16_t usGetPacketLength();						// 패킷 길이 반환
 
 
 		// Set ----------------------------------------------------------------------
 		void SetPacket(uint8_t* pucPacket, uint16_t usPacketLength);	// 패킷 세팅
-		void SetPacketClear(uint8_t ucClearParam = 0);								// 패킷 초기화
+		void SetPacketClear(uint8_t ucClearParam = 0);					// 패킷 초기화
 };
 
 

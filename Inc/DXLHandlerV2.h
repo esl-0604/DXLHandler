@@ -59,10 +59,10 @@ class DXLHandlerV2 {
 		map<uint8_t, tDXLStatus*> _mDXLStatusList;
 
 		uint8_t _ucTotalDXLCnt;
-		uint8_t _ucDxlState; 								// DXL 현재 상태
-		uint8_t _ucParsingType;							// 현재 받은 Status Packet의 Type
-		uint8_t _ucTxIdCnt;									// Sync Tx의 경우, 전송한 ID 개수
-		uint8_t _ucRxIdCnt;									// Sync Rx의 경우, 응답한 ID 개수
+		uint8_t _ucDxlState; 		// DXL 현재 상태
+		uint8_t _ucParsingType;		// 현재 받은 Status Packet의 Type
+		uint8_t _ucTxIdCnt;			// Sync Tx의 경우, 전송한 ID 개수
+		uint8_t _ucRxIdCnt;			// Sync Rx의 경우, 응답한 ID 개수
 
 
 	// Methods
@@ -109,9 +109,9 @@ class DXLHandlerV2 {
 
 
 		// DXL Sync Read Call -----------------------------------------------------
-		vector<int32_t> SyncReadCMD_1Byte		(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress);
-		vector<int32_t> SyncReadCMD_2Byte		(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress);
-		vector<int32_t> SyncReadCMD_4Byte		(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress);
+		vector<int32_t> SyncReadCMD_1Byte	(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress);
+		vector<int32_t> SyncReadCMD_2Byte	(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress);
+		vector<int32_t> SyncReadCMD_4Byte	(uint8_t ucIdNum, uint8_t* pucIdList, uint8_t ucTargetAddress);
 
 
 		// DXL Sync Write Call ----------------------------------------------------
